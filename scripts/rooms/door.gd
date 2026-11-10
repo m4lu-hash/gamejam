@@ -21,14 +21,23 @@ var _door: Node3D
 
 
 func _ready() -> void:
-	body_entered.connect(_on_body_entered)
 	if target_scene.is_empty():
 		return
 	_packed = load(target_scene)
 	if _packed == null:
 		push_error("Door: 目标场景加载失败：%s" % target_scene)
-	# 找本房间离门口最近的门（换场瞬间旧场景还在，所以要等一帧）
+	# 找本房间离门口最近的门（用于"门开够没有"的判断）
 	_find_nearby_door.call_deferred()
+
+
+## 用轮询代替 body_entered：玩家站在触发区里等门开够，也能触发
+func _process(_delta: float) -> void:
+	if _packed == null or RoomManager.is_changing:
+		return
+	for body in get_overlapping_bodies():
+		if _is_player(body) and _can_pass(body):
+			RoomManager.change_room(_packed, target_spawn)
+			return
 
 
 func _find_nearby_door() -> void:
@@ -43,19 +52,15 @@ func _find_nearby_door() -> void:
 			_door = d
 
 
-func _on_body_entered(body: Node3D) -> void:
-	if _packed == null or not _is_player(body):
-		return
+func _can_pass(body: Node3D) -> bool:
+	# 刚换完房间的一小段时间内不响应，避免两个门口来回弹
+	if Time.get_ticks_msec() - RoomManager.last_change_msec < RoomManager.ENTER_GRACE_MSEC:
+		return false
 	# 门没开到能过人的程度就不放行（防止从半开的门缝里被"挤"出去切换）
 	if _door != null and _door.has_method("get_angle_deg"):
 		if absf(_door.get_angle_deg()) < 40.0:
-			return
-	# 刚切完房间的一小段时间内不响应，避免两个门口来回弹
-	if Time.get_ticks_msec() - RoomManager.last_change_msec < RoomManager.ENTER_GRACE_MSEC:
-		return
-	if not _walking_out(body):
-		return
-	RoomManager.change_room(_packed, target_spawn)
+			return false
+	return _walking_out(body)
 
 
 func _is_player(body: Node) -> bool:

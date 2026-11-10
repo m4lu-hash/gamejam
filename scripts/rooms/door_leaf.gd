@@ -48,6 +48,7 @@ var _last_player_pos := Vector3.ZERO
 var _has_last_pos := false
 
 @onready var hinge: Node3D = $Hinge
+@onready var _collision: CollisionShape3D = $Hinge/StaticBody3D/CollisionShape3D
 
 
 func _ready() -> void:
@@ -126,6 +127,13 @@ func _physics_process(delta: float) -> void:
 	hinge.rotation.y = _angle
 	is_open = absf(_angle) > deg_to_rad(8.0)
 
+	# 门在自动开/关（转动）时，如果玩家就在门口，临时关掉门的碰撞，
+	# 避免门板扫到角色把人弹开/甩出去；门停下后会重新打开碰撞。
+	if player != null:
+		var near := global_position.distance_to(player.global_position) < 2.2
+		var auto_moving := _state == State.AUTO_OPENING or _state == State.CLOSING
+		_collision.disabled = auto_moving and near
+
 
 ## 传送进房间时调用：瞬间设为指定角度（不播动画），随后进入可被玩家推的物理状态
 func open_at_angle(angle_deg_arg: float) -> void:
@@ -203,7 +211,11 @@ func _is_pushing(player: Node3D, _delta: float) -> bool:
 	var leaf_center: Vector3 = hinge.global_transform * Vector3(0.8, 0.0, 0.0)
 	var to_leaf: Vector3 = leaf_center - player.global_position
 	to_leaf.y = 0.0
-	if to_leaf.length() > push_range or to_leaf.length() < 0.001:
+	# 贴得极近（甚至已经和门板重叠）时不做方向判定，直接算在推门，
+	# 否则玩家被门卡住时方向可能判定失败，就会"顶着门原地跑"。
+	if to_leaf.length() < 0.8:
+		return true
+	if to_leaf.length() > push_range:
 		return false
 	return dir.normalized().dot(to_leaf.normalized()) >= 0.3
 
