@@ -1,36 +1,32 @@
 extends Node3D
 ## 门扇：只转 Hinge 节点的 Y 轴（合页在门框边缘），所以是绕边轴旋转。
 ##
-## 三种状态：
-##   AUTO_OPENING  被传送进房间时，门播放一次"自动推开"动画（角度 tween）
-##   FREE          动画结束后交给玩家推：角速度积分，物理式（有加速度、惯性、阻尼）
-##   CLOSING       玩家走远后弹簧把门拉回关闭
-## 动画途中如果玩家撞上来，会立刻中断动画切到 FREE，由物理接管。
+## 没有"推门"了，规则很简单：
+##   玩家靠近 open_range 内 -> 播放开门动画（朝房间外开，不会朝玩家扑）
+##   玩家离开 auto_close_distance 外持续 auto_close_delay 秒 -> 弹簧关回去
+##   传送到达时不受上述限制，由 RoomManager 调 open_at_angle() 瞬间设定角度
 
 enum State { CLOSED, AUTO_OPENING, FREE, CLOSING }
 
 ## 最大开合角度（度）
 @export var max_swing_deg := 100.0
-## 玩家离门板多近算"在推门"
-@export var push_range := 1.4
-## 推门角加速度（rad/s²）
-@export var push_accel := 14.0
-## 松手后角速度衰减（rad/s²）
-@export var angular_drag := 6.0
-## 玩家离开到多远后自动关门（房间 8x8，4m 基本是走到对面了）
-@export var auto_close_distance := 4.0
+## 玩家进入多近的范围就自动开门
+@export var open_range := 2.5
+## 自动开门动画时长（秒）
+@export var auto_open_time := 0.5
+## 玩家离开到多远后自动关门
+@export var auto_close_distance := 3.0
 ## 玩家走远后多久开始自动关门（秒）
-@export var auto_close_delay := 1.5
+@export var auto_close_delay := 3.0
 ## 关门弹簧刚度 / 阻尼
 @export var close_stiffness := 10.0
 @export var close_damp := 5.0
 ## 角速度上限
 @export var max_angular_speed := 5.0
-## 自动开启动画时长（秒）
-@export var auto_open_time := 0.45
 ## 是否一开局就处于打开状态
 @export var open_on_start := false
 
+## 门是否处于打开状态（角度超过阈值）
 var is_open := false
 
 var _angle := 0.0
@@ -40,12 +36,10 @@ var _auto_from := 0.0
 var _auto_to := 0.0
 var _auto_t := 0.0
 var _away_time := 0.0
-var _push_sign := 1.0     # 推开时角度方向
-var _inward_sign := -1.0  # 朝房间内时角度方向
-var _has_auto_opened := false  # 第一次开门是否已经播过动画
+var _push_sign := 1.0     # 朝"房间外"的角度方向
+var _inward_sign := -1.0  # 朝"房间内"的角度方向
 var _closed_leaf_dir := Vector3.FORWARD
-var _last_player_pos := Vector3.ZERO
-var _has_last_pos := false
+var _ignore_until := 0    # 出生保护期：这段时间内不自动开门、碰撞关闭
 
 @onready var hinge: Node3D = $Hinge
 @onready var _collision: CollisionShape3D = $Hinge/StaticBody3D/CollisionShape3D
@@ -60,55 +54,40 @@ func _ready() -> void:
 		_closed_leaf_dir = _closed_leaf_dir.normalized()
 	_compute_directions()
 	if open_on_start:
-		open_with_animation(max_swing_deg)
+		open_at_angle(max_swing_deg)
 
 
 func _physics_process(delta: float) -> void:
 	var player := _find_player()
-	var pushing := false
+	var ignoring := Time.get_ticks_msec() < _ignore_until
+	var dist := 999.0
 	if player != null:
-		pushing = _is_pushing(player, delta)
-		_update_away_time(player, delta)
+		dist = global_position.distance_to(player.global_position)
 
 	match _state:
 		State.CLOSED:
-			# 关着的门被推：
-			#   第一次 -> 播放"自动推开"动画（第一次开门看动画）
-			#   之后   -> 直接进物理状态，由玩家推
-			if pushing:
-				if not _has_auto_opened:
-					_has_auto_opened = true
-					open_with_animation(max_swing_deg, false)
-				else:
-					_state = State.FREE
+			# 靠近自动开门（朝房间外开，不会朝玩家扑）
+			if not ignoring and player != null and dist <= open_range:
+				open_with_animation(max_swing_deg, false)
 		State.AUTO_OPENING:
 			_auto_t += delta
 			var k := clampf(_auto_t / maxf(auto_open_time, 0.01), 0.0, 1.0)
 			_angle = lerpf(_auto_from, _auto_to, ease(k, 0.5))
-			if pushing and _auto_t > 0.2:
-				_state = State.FREE
-				_ang_vel = 0.0
-			elif k >= 1.0:
-				_angle = _auto_to
-				_state = State.FREE
-				_ang_vel = 0.0
-			# 兜底：动画卡住（比如被外部改状态）超过两倍时长就强制收尾，避免门永远卡在动画里
-			if _auto_t > auto_open_time * 2.0 + 0.5:
+			if k >= 1.0 or _auto_t > auto_open_time * 2.0 + 0.5:
 				_angle = _auto_to
 				_state = State.FREE
 				_ang_vel = 0.0
 		State.FREE:
-			if pushing:
-				_ang_vel += _push_sign * push_accel * delta
+			if dist > auto_close_distance:
+				_away_time += delta
+				if _away_time >= auto_close_delay:
+					_state = State.CLOSING
 			else:
-				_ang_vel = move_toward(_ang_vel, 0.0, angular_drag * delta)
-			if _away_time >= auto_close_delay:
-				_state = State.CLOSING
+				_away_time = 0.0
 		State.CLOSING:
 			_ang_vel += (-_angle * close_stiffness - _ang_vel * close_damp) * delta
-			# 只要玩家还在附近（或又推门），就暂停关门，别让门板扫到人
-			var player_near := player != null and global_position.distance_to(player.global_position) <= auto_close_distance
-			if pushing or player_near:
+			# 玩家回到附近就取消关门
+			if player != null and dist <= auto_close_distance:
 				_state = State.FREE
 				_away_time = 0.0
 				_ang_vel = 0.0
@@ -118,7 +97,6 @@ func _physics_process(delta: float) -> void:
 	if _state == State.FREE or _state == State.CLOSING:
 		_ang_vel = clampf(_ang_vel, -max_angular_speed, max_angular_speed)
 		_angle += _ang_vel * delta
-
 		var limit := deg_to_rad(max_swing_deg)
 		if _angle > limit:
 			_angle = limit
@@ -130,15 +108,16 @@ func _physics_process(delta: float) -> void:
 	hinge.rotation.y = _angle
 	is_open = absf(_angle) > deg_to_rad(8.0)
 
-	# 门在自动开/关（转动）时，如果玩家就在门口，临时关掉门的碰撞，
-	# 避免门板扫到角色把人弹开/甩出去；门停下后会重新打开碰撞。
+	# 门在自动转动、或出生保护期内，且玩家在门口附近时：临时关掉碰撞，避免把人挤出去
 	if player != null:
-		var near := global_position.distance_to(player.global_position) < 2.2
+		var near := dist < 2.2
 		var auto_moving := _state == State.AUTO_OPENING or _state == State.CLOSING
-		_collision.disabled = auto_moving and near
+		_collision.disabled = ignoring or (auto_moving and near)
+	else:
+		_collision.disabled = ignoring
 
 
-## 传送进房间时调用：瞬间设为指定角度（不播动画），随后进入可被玩家推的物理状态
+## 传送进房间时调用：瞬间设为指定角度（不播动画）
 func open_at_angle(angle_deg_arg: float) -> void:
 	var mag := clampf(absf(angle_deg_arg), 0.0, max_swing_deg)
 	_angle = _inward_sign * deg_to_rad(mag)
@@ -150,9 +129,8 @@ func open_at_angle(angle_deg_arg: float) -> void:
 	_state = State.FREE if mag > 2.0 else State.CLOSED
 
 
-## 播放"自动推开"动画，随后进入可被玩家推的物理状态
-## inward=true 朝房间内开（传送到达用），false 朝房间外开（玩家推门用）
-func open_with_animation(angle_deg_arg: float = 100.0, inward := true) -> void:
+## 播放一次开门动画；inward=true 朝房间内开，false 朝房间外开
+func open_with_animation(angle_deg_arg: float = 100.0, inward := false) -> void:
 	var mag := clampf(absf(angle_deg_arg), 5.0, max_swing_deg)
 	var sign_dir := _inward_sign if inward else _push_sign
 	_auto_from = _angle
@@ -164,25 +142,17 @@ func open_with_animation(angle_deg_arg: float = 100.0, inward := true) -> void:
 	is_open = true
 
 
-## 兜底：直接开（没有来源角度时）
+## 兜底：直接开
 func open_instant() -> void:
 	open_at_angle(max_swing_deg)
 
 
-## 玩家相对本门的坐标：x=沿门板方向的横向距离，z=朝房间内的纵向距离（米）
-func get_player_local_offset(player: Node3D) -> Vector3:
-	var offset: Vector3 = player.global_position - global_position
-	offset.y = 0.0
-	var lateral := offset.dot(_closed_leaf_dir)
-	var inward := offset.dot(-_outward_dir())
-	return Vector3(lateral, player.global_position.y - global_position.y, inward)
-
-
-## 把"相对门的坐标"换算成本门坐标系下的世界位置（严格照搬旧场景的距离，不做最小值限制）
-func place_player_from_offset(offset: Vector3) -> Vector3:
-	var lateral: Vector3 = _closed_leaf_dir * offset.x
-	var inward: Vector3 = (-_outward_dir()) * offset.z
-	return global_position + lateral + inward + Vector3.UP * offset.y
+## 玩家刚被传送到新房间：这段时间内不自动开门、碰撞关闭，避免把人挤出去
+func begin_spawn_grace(seconds := 0.6) -> void:
+	_ignore_until = Time.get_ticks_msec() + int(seconds * 1000.0)
+	_collision.disabled = true
+	_ang_vel = 0.0
+	_state = State.FREE if absf(_angle) > deg_to_rad(2.0) else State.CLOSED
 
 
 ## 当前开合角度（度）
@@ -190,7 +160,7 @@ func get_angle_deg() -> float:
 	return rad_to_deg(_angle)
 
 
-## 调试用：推门方向符号（+1 / -1）
+## 推门方向符号（调试用）
 func get_push_sign() -> float:
 	return _push_sign
 
@@ -202,45 +172,28 @@ func get_leaf_world_dir() -> Vector3:
 	return dir.normalized()
 
 
-## 玩家是否在朝门走：优先用玩家的输入意图方向（被门挡住时 velocity/位移都是 0）
-func _is_pushing(player: Node3D, _delta: float) -> bool:
-	var dir := Vector3.ZERO
-	if player.has_method("get_intended_dir"):
-		dir = player.get_intended_dir()
-	dir.y = 0.0
-	if dir.length() < 0.01:
-		return false
-
-	var leaf_center: Vector3 = hinge.global_transform * Vector3(0.8, 0.0, 0.0)
-	var to_leaf: Vector3 = leaf_center - player.global_position
-	to_leaf.y = 0.0
-	# 贴得极近（甚至已经和门板重叠）时不做方向判定，直接算在推门，
-	# 否则玩家被门卡住时方向可能判定失败，就会"顶着门原地跑"。
-	if to_leaf.length() < 0.8:
-		return true
-	if to_leaf.length() > push_range:
-		return false
-	return dir.normalized().dot(to_leaf.normalized()) >= 0.3
+## 玩家相对本门的坐标：x=沿门板方向的横向距离，z=朝房间内的纵向距离（米）
+func get_player_local_offset(player: Node3D) -> Vector3:
+	var offset: Vector3 = player.global_position - global_position
+	offset.y = 0.0
+	var lateral := offset.dot(_closed_leaf_dir)
+	var inward := offset.dot(-_outward_dir())
+	return Vector3(lateral, player.global_position.y - global_position.y, inward)
 
 
-func _update_away_time(player: Node3D, delta: float) -> void:
-	var dist := global_position.distance_to(player.global_position)
-	if dist > auto_close_distance:
-		_away_time = minf(_away_time + delta, 999.0)
-	else:
-		_away_time = 0.0
+## 把"相对门的坐标"换算成本门坐标系下的世界位置（严格照搬旧场景的距离）
+func place_player_from_offset(offset: Vector3) -> Vector3:
+	var lateral: Vector3 = _closed_leaf_dir * offset.x
+	var inward: Vector3 = (-_outward_dir()) * offset.z
+	return global_position + lateral + inward + Vector3.UP * offset.y
 
 
 func _compute_directions() -> void:
 	var outward := _outward_dir()
-
-	# 直接试：把门板绕 Y 轴转 +90° 和 -90°，哪边更接近"房间外"，哪边就是推门方向。
-	# 不依赖 atan2/signed_angle_to 的符号约定。
 	var basis := hinge.global_transform.basis
 	var leaf_local := Vector3(1.0, 0.0, 0.0)
 	var dir_plus: Vector3 = (basis * Basis(Vector3.UP, PI / 2.0)) * leaf_local
 	var dir_minus: Vector3 = (basis * Basis(Vector3.UP, -PI / 2.0)) * leaf_local
-
 	_push_sign = 1.0 if dir_plus.dot(outward) >= dir_minus.dot(outward) else -1.0
 	_inward_sign = -_push_sign
 
@@ -250,7 +203,6 @@ func _outward_dir() -> Vector3:
 	var room_center := Vector3.ZERO
 	if room is Node3D:
 		room_center = (room as Node3D).global_position
-
 	var outward: Vector3 = global_position - room_center
 	outward.y = 0.0
 	if outward.length() < 0.01:

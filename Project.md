@@ -211,23 +211,19 @@ Z 向门 `Vector3(1.4, 2.3, 0.6)`，X 向门 `Vector3(0.6, 2.3, 1.4)`。
 结构：`DoorLeaf`(Node3D 容器，放在合页位置) → `Hinge`(Node3D，只转它的 Y) → `Leaf` + `StaticBody3D/CollisionShape3D`（都在 `Hinge` 下，偏移 +0.8）。
 **转的是 `Hinge` 节点，不是 `Leaf` 网格**，所以是绕门框边轴旋转，不会绕门板中心打转。
 
-推动是**物理式**的，不是 tween 动画：脚本维护角速度 `_ang_vel`，玩家顶着门走就按 `push_accel` 加速，松手后按 `angular_drag` 衰减（有惯性、会多转一点），玩家走远后弹簧把门拉回；角度是对角速度积分出来的。
+**没有推门了**。规则：玩家靠近 `open_range`（默认 2.5m）→ 播放开门动画（朝房间外开，不会朝玩家扑）；玩家离开 `auto_close_distance`（3m）并持续 `auto_close_delay`（3 秒）→ 弹簧关回去；玩家在关门过程中回到附近会取消关门。
 
-每个门有状态机：`CLOSED →（第一次被推）AUTO_OPENING 播放开门动画 → FREE（之后玩家推，物理）→ CLOSING（走远自动关）`。传送到达时用 `open_at_angle()` **瞬间**设成复制来的角度，不播动画。
-
-推门判定读的是玩家脚本 `p_3d.gd` 暴露的 `get_intended_dir()`（输入意图方向），**不是**实际位移 —— 玩家被门挡住时 `velocity`/位移都会变成 0，用位移判定会导致"原地跑、门打不开"的死循环。
+每个门有状态机：`CLOSED →（玩家靠近）AUTO_OPENING 播放开门动画 → FREE →（走远 3 秒）CLOSING → CLOSED`。传送到达时用 `open_at_angle()` **瞬间**设成复制来的角度（不播动画），并有 0.6 秒出生保护期（不自动开门、碰撞关闭），避免把角色挤出去。
 
 | 导出属性 | 默认 | 说明 |
 | --- | --- | --- |
 | `max_swing_deg` | `100` | 最大开合角度（度） |
-| `push_range` | `1.4` | 玩家离门板多近算"在推门" |
-| `push_accel` | `14.0` | 推门角加速度（rad/s²），越大门越轻 |
-| `angular_drag` | `6.0` | 松手后角速度衰减（rad/s²），越大越"涩" |
-| `auto_close_distance` | `2.8` | 玩家离开到多远后自动关 |
-| `auto_close_delay` | `1.2` | 走远后延迟几秒开始关 |
+| `open_range` | `2.5` | 玩家进入多近自动开门 |
+| `auto_open_time` | `0.5` | 开门动画时长（秒） |
+| `auto_close_distance` | `3.0` | 玩家离开到多远后自动关 |
+| `auto_close_delay` | `3.0` | 走远后延迟几秒关 |
 | `close_stiffness` / `close_damp` | `10` / `5` | 关门弹簧刚度 / 阻尼 |
 | `max_angular_speed` | `5` | 角速度上限 |
-| `auto_open_time` | `0.45` | 传送到达时那次自动开门的动画时长 |
 | `open_on_start` | `false` | 是否开局就开着 |
 
 跨房间的"门还开着"：`RoomManager` 换场前记录出发门的 `get_angle_deg()` **角度大小**，换场后调用目标门的 `open_with_animation(angle)`；方向不用复制——每扇门自己算"朝房间内"的符号（`_inward_sign`），所以从 1→2、2→3、3→2、2→1 任何方向进来，门都朝你进入的那个房间内侧开，不会再出现贴墙的怪角度。

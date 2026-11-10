@@ -113,6 +113,10 @@ func _open_nearest_door(player: Node3D, scene: Node, source_angle := 0.0, has_so
 	elif nearest.has_method("open_instant"):
 		nearest.open_instant()
 
+	# 出生保护期：这段时间内门不响应推门、碰撞关闭，让角色先走开
+	if nearest.has_method("begin_spawn_grace"):
+		nearest.begin_spawn_grace(0.6)
+
 	# 用旧场景里"玩家相对门的位置"来摆放新玩家：距离/方位保持一致
 	if has_source_offset and nearest.has_method("place_player_from_offset"):
 		var pos: Vector3 = nearest.place_player_from_offset(source_offset)
