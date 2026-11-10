@@ -18,10 +18,17 @@ enum AnimState { IDLE, MOVE, JUMP, FALL }
 var _anim_state := -1  # 当前动画状态，-1 表示还没跟状态机同步过
 var _run_tilt := 0.0  # 跑动倾斜量（-1..1），平滑过渡后再写给皮肤
 var _intended_dir := Vector3.ZERO  # 本帧输入想走的方向（被门挡住时 velocity 会被清零，门要用它判断"在推门"）
+## 传送后自动走一小段：方向 / 剩余时间 / 速度
+var _auto_walk_dir := Vector3.ZERO
+var _auto_walk_time := 0.0
+var _auto_walk_speed := 4.0
 
 func _physics_process(delta):
-	var input_vec = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	var wants_move = input_vec.length() > 0.1
+	var auto_walking := _auto_walk_time > 0.0
+	if auto_walking:
+		_auto_walk_time -= delta
+	var input_vec = Vector2.ZERO if auto_walking else Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	var wants_move = auto_walking or input_vec.length() > 0.1
 	var target_tilt = 0.0
 
 	if wants_move:
@@ -34,7 +41,7 @@ func _physics_process(delta):
 		forward = forward.normalized()
 		right = right.normalized()
 
-		var direction = (right * input_vec.x + forward * -input_vec.y).normalized()
+		var direction = _auto_walk_dir if auto_walking else (right * input_vec.x + forward * -input_vec.y).normalized()
 
 		# 让角色平滑转向移动方向（模型正面朝 +Z，atan2 直接给出 yaw）
 		var target_angle = atan2(direction.x, direction.z)
@@ -47,8 +54,9 @@ func _physics_process(delta):
 
 		rotation.y = lerp_angle(rotation.y, target_angle, turn_smoothing * delta)
 
-		velocity.x = direction.x * speed
-		velocity.z = direction.z * speed
+		var move_speed: float = _auto_walk_speed if auto_walking else speed
+		velocity.x = direction.x * move_speed
+		velocity.z = direction.z * move_speed
 		_intended_dir = direction
 	else:
 		velocity.x = move_toward(velocity.x, 0, speed)
@@ -114,3 +122,13 @@ func _update_anim_state(wants_move: bool) -> void:
 ## 但输入意图仍然是朝门的，所以单独暴露这个方向。
 func get_intended_dir() -> Vector3:
 	return _intended_dir
+
+
+## 传送后自动朝某个方向走一小段（忽略玩家输入）
+func start_auto_walk(dir: Vector3, duration := 0.6, walk_speed := 4.0) -> void:
+	dir.y = 0.0
+	if dir.length() < 0.01:
+		return
+	_auto_walk_dir = dir.normalized()
+	_auto_walk_time = duration
+	_auto_walk_speed = walk_speed

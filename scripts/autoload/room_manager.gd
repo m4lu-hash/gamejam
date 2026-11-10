@@ -118,6 +118,13 @@ func _open_nearest_door(player: Node3D, scene: Node, source_angle := 0.0, has_so
 		var pos: Vector3 = nearest.place_player_from_offset(source_offset)
 		player.global_position = pos
 
+	# 传送后朝角色面朝的方向自动走一小段（忽略玩家输入），把角色带离门口
+	if player.has_method("start_auto_walk"):
+		var facing: Vector3 = player.global_transform.basis.z
+		facing.y = 0.0
+		if facing.length() > 0.01:
+			player.start_auto_walk(facing.normalized())
+
 
 func _nearest_door_to(target: Node3D, root: Node = null) -> Node3D:
 	var nearest: Node3D = null
