@@ -112,39 +112,22 @@ metadata/_edit_use_anchors_ = true
 
 [node name="Doors" type="Node3D" parent="." unique_id=2038480861]
 
-[node name="DoorLeafLeft" parent="Doors" unique_id=1702161794 instance=ExtResource("11_doorleaf")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, -0.8)
-
 [node name="DoorLeafBack" parent="Doors" unique_id=1603708198 instance=ExtResource("11_doorleaf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -4)
 
-[node name="DoorToRoom1" type="Area3D" parent="Doors" unique_id=204135508]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 1.2, 0)
-script = ExtResource("5_door")
-target_scene = "res://scenes/rooms/room1.tscn"
-target_spawn = "SpawnFromRoom2"
-exit_direction = Vector3(-1, 0, 0)
-
-[node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToRoom1" unique_id=1514027908]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4849863, 0, -0.030893654)
-shape = SubResource("BoxShape3D_door_x")
-
-[node name="DoorToRoom3" type="Area3D" parent="Doors" unique_id=1498784515]
+[node name="DoorToCorridor" type="Area3D" parent="Doors" unique_id=1498784515]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -4.5)
 script = ExtResource("5_door")
-target_scene = "res://scenes/rooms/room3.tscn"
+target_scene = "res://corridor-1.tscn"
 target_spawn = "SpawnFromRoom2"
 
-[node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToRoom3" unique_id=1856346623]
+[node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToCorridor" unique_id=1856346623]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.12223148)
 shape = SubResource("BoxShape3D_door_z")
 
 [node name="Spawns" type="Node3D" parent="." unique_id=1356962599]
 
-[node name="SpawnFromRoom1" type="Marker3D" parent="Spawns" unique_id=593487041]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -2.2, 0, 0)
-
-[node name="SpawnFromRoom3" type="Marker3D" parent="Spawns" unique_id=1672751386]
+[node name="SpawnFromCorridor" type="Marker3D" parent="Spawns" unique_id=1672751386]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.2)
 
 [node name="RoomLabel" type="Label3D" parent="." unique_id=1644782252]

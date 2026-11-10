@@ -1,4 +1,4 @@
-﻿[gd_scene format=3 uid="uid://04s07e371ha1"]
+[gd_scene format=3 uid="uid://04s07e371ha1"]
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_htvxh"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://shaders/level_blur.gdshader" id="2_vddjn"]
@@ -116,20 +116,20 @@ metadata/_edit_use_anchors_ = true
 [node name="DoorLeafLeft" parent="Doors" unique_id=1521301382 instance=ExtResource("11_doorleaf")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, -0.8)
 
-[node name="DoorToRoom2" type="Area3D" parent="Doors" unique_id=1946249224]
+[node name="DoorToCorridor" type="Area3D" parent="Doors" unique_id=1946249224]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 1.2, 0)
 script = ExtResource("5_door")
-target_scene = "res://scenes/rooms/room2.tscn"
+target_scene = "res://corridor-1.tscn"
 target_spawn = "SpawnFromRoom3"
 exit_direction = Vector3(-1, 0, 0)
 
-[node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToRoom2" unique_id=879797328]
+[node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToCorridor" unique_id=879797328]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.33106136, 0, 0)
 shape = SubResource("BoxShape3D_door_x")
 
 [node name="Spawns" type="Node3D" parent="." unique_id=189377493]
 
-[node name="SpawnFromRoom2" type="Marker3D" parent="Spawns" unique_id=667847934]
+[node name="SpawnFromCorridor" type="Marker3D" parent="Spawns" unique_id=667847934]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -2.2, 0, 0)
 
 [node name="RoomLabel" type="Label3D" parent="." unique_id=1481211202]

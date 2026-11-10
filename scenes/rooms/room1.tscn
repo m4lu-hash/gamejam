@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://bj15j7iefc5oq" path="res://OFFICE/OFFICE/computers/TV.glb" id="10_v5j5c"]
 [ext_resource type="PackedScene" uid="uid://blvhevayj5pye" path="res://PSX-Derelict-Furniture-Standard/glb/fridge.glb" id="11_aicyk"]
 [ext_resource type="PackedScene" uid="uid://f7iwixyl1x5v" path="res://PSX-Derelict-Furniture-Standard/glb/mattress.glb" id="12_8b0r0"]
+[ext_resource type="Script" path="res://scripts/rooms/interactable.gd" id="13_interact"]
 
 [sub_resource type="Environment" id="Environment_vkqoe"]
 ambient_light_source = 2
@@ -48,6 +49,15 @@ size = Vector3(1.4, 2.3, 0.6928894)
 
 [sub_resource type="BoxMesh" id="BoxMesh_vkqoe"]
 size = Vector3(1, 1.6, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_desk"]
+size = Vector3(1.4, 0.8, 0.9)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_mattress"]
+size = Vector3(1.8, 0.3, 1.1)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
+radius = 1.0
 
 [node name="Room1" type="Node3D" unique_id=13638478]
 
@@ -130,19 +140,19 @@ metadata/_edit_use_anchors_ = true
 [node name="DoorLeaf" parent="Doors" unique_id=910492629 instance=ExtResource("11_doorleaf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -4)
 
-[node name="DoorToRoom2" type="Area3D" parent="Doors" unique_id=2084437538]
+[node name="DoorToCorridor" type="Area3D" parent="Doors" unique_id=2084437538]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -4.5)
 script = ExtResource("9_door")
-target_scene = "res://scenes/rooms/room2.tscn"
+target_scene = "res://corridor-1.tscn"
 target_spawn = "SpawnFromRoom1"
 
-[node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToRoom2" unique_id=278510115]
+[node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToCorridor" unique_id=278510115]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.085375786)
 shape = SubResource("BoxShape3D_door_z")
 
 [node name="Spawns" type="Node3D" parent="." unique_id=1555463066]
 
-[node name="SpawnFromRoom2" type="Marker3D" parent="Spawns" unique_id=1522575849]
+[node name="SpawnFromCorridor" type="Marker3D" parent="Spawns" unique_id=1522575849]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.2)
 
 [node name="RoomLabel" type="Label3D" parent="." unique_id=2070336769]
@@ -198,3 +208,48 @@ area_attenuation = 1.114
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
 visible = false
 mesh = SubResource("BoxMesh_vkqoe")
+
+[node name="DeskCollision" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8404615, 0.45, -1.2190607)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DeskCollision"]
+shape = SubResource("BoxShape3D_desk")
+
+[node name="MattressCollision" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7126665, 0.18, -1.79362)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MattressCollision"]
+shape = SubResource("BoxShape3D_mattress")
+
+[node name="DeskSit" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 0.35, -1.22)
+
+[node name="MattressSit" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.71, 0.35, -1.79)
+
+[node name="DeskInteract" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.84, 1.0, -1.22)
+script = ExtResource("13_interact")
+prompt_text = "按 E 坐下"
+sit_point = NodePath("../DeskSit")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DeskInteract"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="MattressInteract" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.71, 1.0, -1.79)
+script = ExtResource("13_interact")
+prompt_text = "按 E 躺下"
+sit_point = NodePath("../MattressSit")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MattressInteract"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="TVInteract" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9, 1.1, 2.9)
+script = ExtResource("13_interact")
+prompt_text = "按 E 开关电视灯光"
+toggle_target = NodePath("../AreaLight3D")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TVInteract"]
+shape = SubResource("SphereShape3D_interact")
