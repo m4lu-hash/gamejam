@@ -37,7 +37,7 @@ shader = ExtResource("4_0b4ue")
 shader_parameter/blur_amount = 0.0
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_door_z"]
-size = Vector3(1.4, 2.3, 0.6)
+size = Vector3(1.4, 2.3, 0.6928894)
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_vkqoe"]
 radius = 0.37646484
@@ -68,7 +68,7 @@ material = SubResource("FogMaterial_vkqoe")
 mesh_library = ExtResource("1_u52ul")
 cell_size = Vector3(4, 0.1, 4)
 data = {
-"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0)
+"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 0, 65534, 0, 65535, 65534, 0)
 }
 
 [node name="FloorPlane" type="MeshInstance3D" parent="Geometry" unique_id=450198660]
@@ -128,6 +128,7 @@ target_scene = "res://scenes/rooms/room2.tscn"
 target_spawn = "SpawnFromRoom1"
 
 [node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToRoom2" unique_id=278510115]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.046444893)
 shape = SubResource("BoxShape3D_door_z")
 
 [node name="Spawns" type="Node3D" parent="." unique_id=1555463066]

@@ -2,22 +2,10 @@
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_o70tu"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://shaders/level_blur.gdshader" id="2_08gkj"]
-[ext_resource type="Script" path="res://scripts/player/p_3d.gd" id="3_player"]
-[ext_resource type="PackedScene" path="res://player/sophia_skin/sophia_skin.tscn" id="4_skin"]
-[ext_resource type="Script" path="res://scripts/rooms/door.gd" id="5_door"]
+[ext_resource type="Script" uid="uid://b1g614wcvrb8v" path="res://scripts/player/p_3d.gd" id="3_player"]
+[ext_resource type="PackedScene" uid="uid://prh35jb6tjtd" path="res://player/sophia_skin/sophia_skin.tscn" id="4_skin"]
+[ext_resource type="Script" uid="uid://26dt7oo43w68" path="res://scripts/rooms/door.gd" id="5_door"]
 [ext_resource type="PackedScene" path="res://scenes/doors/door_leaf.tscn" id="11_doorleaf"]
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_j7v4n"]
-size = Vector2(8, 8)
-
-[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_kgaip"]
-data = PackedVector3Array(4, 0, 4, -4, 0, 4, 4, 0, -4, -4, 0, 4, -4, 0, -4, 4, 0, -4)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7on73"]
-shading_mode = 0
-albedo_color = Color(0, 0, 0, 1)
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_ie535"]
 
 [sub_resource type="Environment" id="Environment_nq0ms"]
 ambient_light_source = 2
@@ -26,37 +14,34 @@ ambient_light_energy = 1.99
 volumetric_fog_enabled = true
 volumetric_fog_density = 0.0
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_joxwf"]
-shader = ExtResource("2_08gkj")
-shader_parameter/blur_amount = 0.0
-
 [sub_resource type="FogMaterial" id="FogMaterial_beyeo"]
 height_falloff = 1.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7on73"]
+shading_mode = 0
+albedo_color = Color(0, 0, 0, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ie535"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_1id8r"]
 size = Vector3(8, 8, 0)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cv072"]
-albedo_color = Color(0.59644604, 0.338554, 0.16658786, 1)
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_iuj6i"]
-size = Vector2(1.6, 2.3)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_jykgh"]
-size = Vector3(1.3261719, 0.5234375, 2.0257568)
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
-radius = 0.37646484
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_door_z"]
-size = Vector3(1.4, 2.3, 0.6)
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_joxwf"]
+shader = ExtResource("2_08gkj")
+shader_parameter/blur_amount = 0.0
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_door_x"]
 size = Vector3(0.6, 2.3, 1.4)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_door_z"]
+size = Vector3(1.4, 2.3, 0.6)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
+radius = 0.37646484
+
 [node name="Room2" type="Node3D" unique_id=1136727263]
 
-[node name="Environment" type="Node3D" parent="."]
+[node name="Environment" type="Node3D" parent="." unique_id=1268755271]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="Environment" unique_id=1326491576]
 environment = SubResource("Environment_nq0ms")
@@ -74,13 +59,13 @@ visible = false
 size = Vector3(6, 0.3, 6)
 material = SubResource("FogMaterial_beyeo")
 
-[node name="Geometry" type="Node3D" parent="."]
+[node name="Geometry" type="Node3D" parent="." unique_id=1417942314]
 
 [node name="FloorGrid" type="GridMap" parent="Geometry" unique_id=1697178982]
 mesh_library = ExtResource("1_o70tu")
 cell_size = Vector3(4, 0.1, 4)
 data = {
-"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0)
+"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 0, 65534, 0, 65535, 65534, 0, 65534, 65535, 0, 65534, 0, 0)
 }
 
 [node name="Backdrop" type="MeshInstance3D" parent="Geometry" unique_id=403867501]
@@ -88,12 +73,12 @@ transform = Transform3D(-4.2433844, 26.78573, -26.578835, 20.92186, 11.035103, 0
 material_override = SubResource("StandardMaterial3D_7on73")
 mesh = SubResource("PlaneMesh_ie535")
 
-[node name="DoorWall_Z" type="CSGBox3D" parent="Geometry"]
+[node name="DoorWall_Z" type="CSGBox3D" parent="Geometry" unique_id=1847968178]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -4)
 use_collision = true
 size = Vector3(8, 8, 0.1)
 
-[node name="DoorHole" type="CSGBox3D" parent="Geometry/DoorWall_Z"]
+[node name="DoorHole" type="CSGBox3D" parent="Geometry/DoorWall_Z" unique_id=2061391082]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.8136938, -0.21917725)
 operation = 2
 size = Vector3(1.6, 2.3, 0.562)
@@ -129,42 +114,40 @@ grow_horizontal = 2
 grow_vertical = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="Doors" type="Node3D" parent="."]
+[node name="Doors" type="Node3D" parent="." unique_id=2038480861]
 
-[node name="DoorLeafLeft" parent="Doors" instance=ExtResource("11_doorleaf")]
+[node name="DoorLeafLeft" parent="Doors" unique_id=1702161794 instance=ExtResource("11_doorleaf")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, -0.8)
 open_angle_deg = -90.0
 
-[node name="DoorLeafBack" parent="Doors" instance=ExtResource("11_doorleaf")]
+[node name="DoorLeafBack" parent="Doors" unique_id=1603708198 instance=ExtResource("11_doorleaf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -4)
-open_angle_deg = 95.0
 
-[node name="DoorToRoom1" type="Area3D" parent="Doors"]
+[node name="DoorToRoom1" type="Area3D" parent="Doors" unique_id=204135508]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 1.2, 0)
 script = ExtResource("5_door")
 target_scene = "res://scenes/rooms/room1.tscn"
 target_spawn = "SpawnFromRoom2"
 exit_direction = Vector3(-1, 0, 0)
 
-[node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToRoom1"]
+[node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToRoom1" unique_id=1514027908]
 shape = SubResource("BoxShape3D_door_x")
 
-[node name="DoorToRoom3" type="Area3D" parent="Doors"]
+[node name="DoorToRoom3" type="Area3D" parent="Doors" unique_id=1498784515]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -4.5)
 script = ExtResource("5_door")
 target_scene = "res://scenes/rooms/room3.tscn"
 target_spawn = "SpawnFromRoom2"
-exit_direction = Vector3(0, 0, -1)
 
-[node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToRoom3"]
+[node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToRoom3" unique_id=1856346623]
 shape = SubResource("BoxShape3D_door_z")
 
-[node name="Spawns" type="Node3D" parent="."]
+[node name="Spawns" type="Node3D" parent="." unique_id=1356962599]
 
-[node name="SpawnFromRoom1" type="Marker3D" parent="Spawns"]
+[node name="SpawnFromRoom1" type="Marker3D" parent="Spawns" unique_id=593487041]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -2.2, 0, 0)
 
-[node name="SpawnFromRoom3" type="Marker3D" parent="Spawns"]
+[node name="SpawnFromRoom3" type="Marker3D" parent="Spawns" unique_id=1672751386]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.2)
 
 [node name="RoomLabel" type="Label3D" parent="." unique_id=1644782252]
@@ -173,13 +156,13 @@ pixel_size = 0.05
 text = "房间2
 "
 
-[node name="player" type="CharacterBody3D" parent="." node_paths=PackedStringArray("camera")]
+[node name="player" type="CharacterBody3D" parent="." unique_id=1879037750 node_paths=PackedStringArray("camera")]
 script = ExtResource("3_player")
 camera = NodePath("../mainCamera3D")
 
-[node name="SophiaSkin" parent="player" instance=ExtResource("4_skin")]
+[node name="SophiaSkin" parent="player" unique_id=228298316 instance=ExtResource("4_skin")]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="player"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="player" unique_id=312951222]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.84088886, 0)
 shape = SubResource("CapsuleShape3D_player")
 
