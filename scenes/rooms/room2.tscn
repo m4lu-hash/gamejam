@@ -3,8 +3,8 @@
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_o70tu"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://shaders/level_blur.gdshader" id="2_08gkj"]
 [ext_resource type="Script" uid="uid://26dt7oo43w68" path="res://scripts/rooms/door.gd" id="5_door"]
-[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="6_player"]
-[ext_resource type="PackedScene" path="res://scenes/doors/door_leaf.tscn" id="11_doorleaf"]
+[ext_resource type="PackedScene" uid="uid://c1w38e5tm11ib" path="res://scenes/player/player.tscn" id="6_player"]
+[ext_resource type="PackedScene" uid="uid://mtsy13i6rbtf" path="res://scenes/doors/door_leaf.tscn" id="11_doorleaf"]
 
 [sub_resource type="Environment" id="Environment_nq0ms"]
 ambient_light_source = 2
@@ -28,9 +28,6 @@ size = Vector3(8, 8, 0)
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_joxwf"]
 shader = ExtResource("2_08gkj")
 shader_parameter/blur_amount = 0.0
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_door_x"]
-size = Vector3(0.6, 2.3, 1.4)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_door_z"]
 size = Vector3(1.4, 2.3, 0.6)
@@ -83,11 +80,6 @@ size = Vector3(1.6, 2.3, 0.562)
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -4, 4, 0)
 use_collision = true
 size = Vector3(8, 8, 0.1)
-
-[node name="DoorHole" type="CSGBox3D" parent="Geometry/DoorWall_X" unique_id=1512100051]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.8136938, -0.21917725)
-operation = 2
-size = Vector3(1.6, 2.3, 0.562)
 
 [node name="Bounds" type="StaticBody3D" parent="Geometry" unique_id=523000298]
 

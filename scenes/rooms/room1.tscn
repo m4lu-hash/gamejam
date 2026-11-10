@@ -47,6 +47,9 @@ shader_parameter/blur_amount = 0.0
 [sub_resource type="BoxShape3D" id="BoxShape3D_door_z"]
 size = Vector3(1.4, 2.3, 0.6928894)
 
+[sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
+radius = 1.0
+
 [sub_resource type="BoxMesh" id="BoxMesh_vkqoe"]
 size = Vector3(1, 1.6, 1)
 
@@ -55,9 +58,6 @@ size = Vector3(1.4, 0.8, 0.9)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_mattress"]
 size = Vector3(1.8, 0.3, 1.1)
-
-[sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
-radius = 1.0
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_fridge"]
 size = Vector3(0.84, 1.9, 0.98)
@@ -194,6 +194,15 @@ transform = Transform3D(0.9675368, -0.0025542872, -0.2527173, 0.005966529, 0.999
 [node name="TV2" parent="." unique_id=198274508 instance=ExtResource("10_v5j5c")]
 transform = Transform3D(-0.6950707, 0, -0.7189415, 0, 1, 0, 0.7189415, 0, -0.6950707, 2.9783344, 0.64765, 2.8682344)
 
+[node name="TVInteract" type="Area3D" parent="TV2" unique_id=245629768]
+transform = Transform3D(-0.6950706, 0, 0.71894145, 0, 1, 0, -0.71894145, 0, -0.6950706, 0.07728553, 0.45235002, 0.03423834)
+script = ExtResource("13_interact")
+prompt_text = "按 E 开关电视灯光"
+toggle_target = NodePath("../../AreaLight3D")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TV2/TVInteract" unique_id=1617375674]
+shape = SubResource("SphereShape3D_interact")
+
 [node name="fridge" parent="." unique_id=756377785 instance=ExtResource("11_aicyk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3653133, 0.054859042, 0.70072865)
 
@@ -230,17 +239,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.35, -1.22)
 [node name="MattressSit" type="Marker3D" parent="." unique_id=98086179]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.71, 0.35, -1.79)
 
-[node name="TVInteract" type="Area3D" parent="." unique_id=245629768]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9, 1.1, 2.9)
-script = ExtResource("13_interact")
-prompt_text = "按 E 开关电视灯光"
-toggle_target = NodePath("../AreaLight3D")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="TVInteract" unique_id=1617375674]
-shape = SubResource("SphereShape3D_interact")
-
-[node name="FridgeCollision" type="StaticBody3D" parent="."]
+[node name="FridgeCollision" type="StaticBody3D" parent="." unique_id=1759641177]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3653133, 1.0048591, 0.70072865)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="FridgeCollision"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FridgeCollision" unique_id=2016632971]
 shape = SubResource("BoxShape3D_fridge")
