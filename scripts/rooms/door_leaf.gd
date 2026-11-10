@@ -78,7 +78,10 @@ func _physics_process(delta: float) -> void:
 				_state = State.FREE
 				_ang_vel = 0.0
 		State.FREE:
-			if dist > auto_close_distance:
+			# 玩家靠近但门没全开（比如刚被中断的关门）：重新开到全开
+			if player != null and dist <= open_range and absf(_angle) < deg_to_rad(max_swing_deg - 5.0):
+				open_with_animation(max_swing_deg, false)
+			elif dist > auto_close_distance:
 				_away_time += delta
 				if _away_time >= auto_close_delay:
 					_state = State.CLOSING
@@ -86,11 +89,9 @@ func _physics_process(delta: float) -> void:
 				_away_time = 0.0
 		State.CLOSING:
 			_ang_vel += (-_angle * close_stiffness - _ang_vel * close_damp) * delta
-			# 玩家回到附近就取消关门
-			if player != null and dist <= auto_close_distance:
-				_state = State.FREE
-				_away_time = 0.0
-				_ang_vel = 0.0
+			# 玩家走过来就重新打开，而不是停在半路
+			if player != null and dist <= open_range:
+				open_with_animation(max_swing_deg, false)
 			elif absf(_angle) < deg_to_rad(1.5) and absf(_ang_vel) < 0.2:
 				_snap_closed()
 
