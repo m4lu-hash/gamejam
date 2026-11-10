@@ -176,9 +176,11 @@ func get_player_local_offset(player: Node3D) -> Vector3:
 
 
 ## 把"相对门的坐标"换算成本门坐标系下的世界位置
+## 纵向距离至少留 1.9m，避免角色刷在门板旋转的扫掠范围里、被门挤着推
 func place_player_from_offset(offset: Vector3) -> Vector3:
 	var lateral: Vector3 = _closed_leaf_dir * offset.x
-	var inward: Vector3 = (-_outward_dir()) * offset.z
+	var inward_dist := maxf(offset.z, 1.9)
+	var inward: Vector3 = (-_outward_dir()) * inward_dist
 	return global_position + lateral + inward + Vector3.UP * offset.y
 
 
