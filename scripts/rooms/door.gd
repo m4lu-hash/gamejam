@@ -48,5 +48,6 @@ func _walking_out(body: Node) -> bool:
 	var velocity: Vector3 = (body as CharacterBody3D).velocity
 	velocity.y = 0.0
 	if velocity.length() < 0.1:
-		return false
+		# 触发区已经在门框外侧，拿不到速度时也允许触发（能走到这里就说明已经出门了）
+		return true
 	return velocity.normalized().dot(exit_direction.normalized()) >= direction_tolerance

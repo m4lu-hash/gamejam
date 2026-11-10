@@ -5,18 +5,20 @@ enum AnimState { IDLE, MOVE, JUMP, FALL }
 
 @export var speed = 5.0
 @export var camera: Camera3D  # 在检查器里把场景中的摄像机拖进来
-@export var jump_velocity = 6.0  # 跳跃初速度（米/秒）
+@export var jump_velocity = 8.0  # 跳跃初速度（米/秒）
 @export var gravity_scale = 2.0  # 重力倍率：1.0 是引擎默认的 9.8，越大落地越快
 @export var fall_gravity_scale = 1.35  # 下落阶段额外重力倍率，落地更干脆
 @export var turn_smoothing = 10.0  # 转身插值速度，越大转得越急
 @export var tilt_speed = 6.0  # run_tilt 每秒过渡量，越大倾斜回正越快
 @export var tilt_full_angle = 45.0  # 转向差达到多少度时倾斜到 ±1
+@export var door_push_force = 300.0  # 推门时给门的冲量（牛），越大门开得越快
 
 # 皮肤节点可能不存在（例如别的场景复用这个脚本），用 get_node_or_null 安全降级
 @onready var skin: SophiaSkin = get_node_or_null("SophiaSkin") as SophiaSkin
 
 var _anim_state := -1  # 当前动画状态，-1 表示还没跟状态机同步过
 var _run_tilt := 0.0  # 跑动倾斜量（-1..1），平滑过渡后再写给皮肤
+var _intended_dir := Vector3.ZERO  # 本帧想走的方向（move_and_slide 会清空 velocity，推门要用它）
 
 func _physics_process(delta):
 	var input_vec = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -48,9 +50,11 @@ func _physics_process(delta):
 
 		velocity.x = direction.x * speed
 		velocity.z = direction.z * speed
+		_intended_dir = direction
 	else:
 		velocity.x = move_toward(velocity.x, 0, speed)
 		velocity.z = move_toward(velocity.z, 0, speed)
+		_intended_dir = Vector3.ZERO
 
 	# —— 重力 ——
 	if is_on_floor():
@@ -75,6 +79,9 @@ func _physics_process(delta):
 	move_and_slide()
 	global_transform = global_transform.orthonormalized()
 	#get_viewport().scaling_3d_scale = 0.40
+
+	# 玩家用身体推门（CharacterBody3D 不会自动推动刚体，需要手动施加冲量）
+	_push_doors(delta)
 
 	# move_and_slide 之后才判断落地/腾空，这样起跳当帧就能切到 Jump
 	_update_anim_state(wants_move)
@@ -105,3 +112,21 @@ func _update_anim_state(wants_move: bool) -> void:
 			skin.jump()
 		AnimState.FALL:
 			skin.fall()
+
+
+## 玩家用身体推门：CharacterBody3D 不会自动推动刚体，
+## 这里在 move_and_slide 之后遍历碰撞，对撞到的门刚体施加"力矩冲量"（门是轴锁刚体，线性冲量会被锁掉）。
+func _push_doors(delta: float) -> void:
+	var dir := _intended_dir
+	if dir.length() < 0.2:
+		return
+	dir = dir.normalized()
+
+	for i in get_slide_collision_count():
+		var collision := get_slide_collision(i)
+		var collider := collision.get_collider()
+		if collider is RigidBody3D and collider.is_in_group("door_leaf"):
+			var body := collider as RigidBody3D
+			var offset: Vector3 = collision.get_position() - body.global_position
+			var torque: Vector3 = offset.cross(dir * door_push_force * delta)
+			body.apply_torque_impulse(Vector3(0.0, torque.y, 0.0))

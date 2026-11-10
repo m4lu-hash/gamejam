@@ -67,7 +67,7 @@ material = SubResource("FogMaterial_cc7fx")
 mesh_library = ExtResource("1_htvxh")
 cell_size = Vector3(4, 0.1, 4)
 data = {
-"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 65534, 65535, 0, 65534, 0, 0)
+"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 65534, 65535, 0, 65534, 0, 0, 3, 65534, 0)
 }
 
 [node name="FloorPlane" type="MeshInstance3D" parent="Geometry" unique_id=1669693501]
@@ -119,7 +119,6 @@ metadata/_edit_use_anchors_ = true
 
 [node name="DoorLeafLeft" parent="Doors" unique_id=1521301382 instance=ExtResource("11_doorleaf")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, -0.8)
-open_angle_deg = -90.0
 
 [node name="DoorToRoom2" type="Area3D" parent="Doors" unique_id=1946249224]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 1.2, 0)
@@ -129,6 +128,7 @@ target_spawn = "SpawnFromRoom3"
 exit_direction = Vector3(-1, 0, 0)
 
 [node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToRoom2" unique_id=879797328]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.33106136, 0, 0)
 shape = SubResource("BoxShape3D_door_x")
 
 [node name="Spawns" type="Node3D" parent="." unique_id=189377493]
@@ -154,5 +154,6 @@ shape = SubResource("CapsuleShape3D_player")
 
 [node name="mainCamera3D" type="Camera3D" parent="." unique_id=269160623]
 transform = Transform3D(0.7071068, -0.24184474, 0.66446304, 0, 0.9396926, 0.34202012, -0.7071068, -0.24184474, 0.66446304, 8, 6.6000147, 8)
+keep_aspect = 0
 current = true
 size = 20.0

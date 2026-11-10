@@ -160,7 +160,7 @@ res://
 | `player` | `door.gd` / `room_manager.gd` / `door_leaf.gd` | 必须是**房间根的直接子节点**；`door.gd` 判 `body.name == "player"`，`room_manager` 用 `get_node_or_null("player")` |
 | `mainCamera3D` | `p_3d.gd` 的 `@export var camera` | 场景里存的是 `NodePath("../mainCamera3D")`，所以它必须和 `player` 同级（都在根下） |
 | `SophiaSkin` | `p_3d.gd` | `get_node_or_null("SophiaSkin")`（player 的子节点） |
-| `Pivot` | `door_leaf.gd` | `$Pivot`（门绕它旋转；`Leaf` / `StaticBody3D` 是它的子节点） |
+| `DoorBody` | `door_leaf.gd` | 门刚体本身（`DoorLeaf` 容器的子节点），锁死平移与 X/Z 旋转，只绕 Y 转 |
 | `SpawnFromRoomN` | `room_manager.gd` | `scene.find_child(名字, true, false)` 递归查找（可以放在 `Spawns/` 里） |
 | `DoorToRoomN` | 无（脚本挂在自身上） | 名字本身不参与逻辑，但**必须和对面房间的 `SpawnFromRoomN` 严格对应**，见 §4 |
 | `DoorLeaf*` | `door_leaf.gd` | 靠 `add_to_group("door_leaf")`，节点名随意，但同房间内要唯一 |
@@ -205,24 +205,28 @@ Z 向门 `Vector3(1.4, 2.3, 0.6)`，X 向门 `Vector3(0.6, 2.3, 1.4)`。
 
 ### 门扇（`DoorLeaf`，来自 `scenes/doors/door_leaf.tscn`）
 
-结构：`DoorLeaf`(Node3D, `door_leaf.gd`) → `Pivot`(Node3D) → `Leaf`(MeshInstance3D) + `StaticBody3D/CollisionShape3D`。门扇没有按键交互，玩家朝门走、进入 `push_range` 就会被顶开。
+结构：`DoorLeaf`(Node3D 容器) → `DoorBody`(RigidBody3D，`door_leaf.gd`) → `Leaf`(MeshInstance3D) + `CollisionShape3D`。
+门是**真刚体**：`axis_lock_*` 锁死三轴平移和 X/Z 旋转，只允许绕 Y 轴转（等价于一个可靠的合页关节）。
+没有按键交互：贴着门、朝门的方向走，就会被"顶开"（脚本按玩家位移方向给门施加力矩冲量）；玩家走远后弹簧把门拉回关闭。
 
 | 导出属性 | 默认 | 说明 |
 | --- | --- | --- |
-| `open_angle_deg` | `95.0` | 绕 Y 轴推开角度，**正负决定往哪边开**（rooms 里实际用了 `+95` 和 `-90`） |
-| `swing_time` | `0.45` | 开关门动画时长（秒） |
-| `push_range` | `0.9` | 玩家离门板中心多近时会被判定为"在推门"（贴近才推得动） |
-| `push_direction_dot` | `0.45` | 速度方向与"玩家→门中心"方向的点积阈值，低于它不算朝门走 |
-| `arrive_opens_inward` | `true` | 被传送到新房间时，这扇门是"从另一侧推过去"的，所以朝房间内开着（与推门方向相反） |
+| `arrive_opens_inward` | `true` | 被传送到新房间时，门是"从另一侧推过去"的，所以朝房间内开着（与推门方向相反） |
+| `push_range` | `1.4` | 玩家离门板多近算"在推门" |
+| `push_torque` | `26.0` | 推门力矩（牛·米/秒），越大开门越快 |
 | `auto_close_distance` | `2.8` | 玩家离开到多远后自动关 |
-| `auto_close_delay` | `1.0` | 走远后延迟几秒关 |
+| `auto_close_delay` | `1.2` | 走远后延迟几秒开始关 |
+| `close_stiffness` / `close_damping` | `60` / `8` | 关门弹簧刚度 / 阻尼 |
+| `max_swing_deg` | `100` | 最大开合角度（度），超过就夹住 |
+| `max_angular_speed` | `5` | 角速度上限，防止被推飞 |
 | `open_on_start` | `false` | 是否开局就开着（跨房间传送时由 `RoomManager` 调 `open_instant()`） |
 
 摆放要点：
 1. 节点放在**合页**（门框一侧边缘）位置，本地 **+X 就是门板伸出的方向**；
-2. 门板已在 `Pivot` 下偏移 `x = 0.8`（= 门宽 1.6 的一半），所以合页对齐门框边缘即可，不用再补偏移；
-3. 用 `rotation.y` 把本地 +X 转成门洞方向；
-4. 开关方向不对就翻转 `open_angle_deg` 的正负，不要改脚本。
+2. 门板在 `DoorBody` 下偏移 `x = 0.8`（门宽 1.56 的一半 + 一点间隙），合页对齐门框边缘即可；
+3. 用**容器节点**的 `rotation.y` 把本地 +X 转成门洞方向；
+4. **开合方向不需要手填**：脚本按「门板方向 → 房间外」自动计算（`_compute_open_direction`），到达时自动取反，所以门放在哪面墙都会自动朝外开、进来时朝内开；
+5. 已知坑：`HingeJoint3D` 在这个 Godot 版本里行为不可靠（最小场景复现过），所以合页是用 `axis_lock_*` + 力矩冲量实现的，见 `door_leaf.gd` 顶部注释。
 
 ---
 
@@ -323,8 +327,8 @@ RoomManager="*res://scripts/autoload/room_manager.gd"
 ### 7.4 加门扇
 把 `scenes/doors/door_leaf.tscn` 拖进 `Doors/`：
 - 命名 `DoorLeaf`（同房间多扇就 `DoorLeafLeft` / `DoorLeafBack` …，保证唯一）；
-- 放在**合页**位置，`rotation.y` 让本地 +X 指向门板伸出方向；
-- `open_angle_deg` 正负决定往里/往外开（现有：`+95` / `-90` 两种）；
+- 放在**合页**位置，用容器 `rotation.y` 让本地 +X 指向门板伸出方向；
+- 开合方向、到达时的开启角度都由脚本自动计算，**不需要手填角度**；
 - 想要「一进门就是开着的」，把 `open_on_start` 打开。
 
 ### 7.5 反过来把房间3连到房间4

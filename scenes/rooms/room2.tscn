@@ -65,7 +65,7 @@ material = SubResource("FogMaterial_beyeo")
 mesh_library = ExtResource("1_o70tu")
 cell_size = Vector3(4, 0.1, 4)
 data = {
-"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 0, 65534, 0, 65535, 65534, 0, 65534, 65535, 0, 65534, 0, 0)
+"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 0, 65534, 0, 65535, 65534, 0, 65534, 65535, 0, 65534, 0, 0, 65535, 1, 0)
 }
 
 [node name="Backdrop" type="MeshInstance3D" parent="Geometry" unique_id=403867501]
@@ -118,7 +118,6 @@ metadata/_edit_use_anchors_ = true
 
 [node name="DoorLeafLeft" parent="Doors" unique_id=1702161794 instance=ExtResource("11_doorleaf")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, -0.8)
-open_angle_deg = -90.0
 
 [node name="DoorLeafBack" parent="Doors" unique_id=1603708198 instance=ExtResource("11_doorleaf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -4)
@@ -131,6 +130,7 @@ target_spawn = "SpawnFromRoom2"
 exit_direction = Vector3(-1, 0, 0)
 
 [node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToRoom1" unique_id=1514027908]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4849863, 0, -0.030893654)
 shape = SubResource("BoxShape3D_door_x")
 
 [node name="DoorToRoom3" type="Area3D" parent="Doors" unique_id=1498784515]
@@ -140,6 +140,7 @@ target_scene = "res://scenes/rooms/room3.tscn"
 target_spawn = "SpawnFromRoom2"
 
 [node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToRoom3" unique_id=1856346623]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.12223148)
 shape = SubResource("BoxShape3D_door_z")
 
 [node name="Spawns" type="Node3D" parent="." unique_id=1356962599]
@@ -157,6 +158,7 @@ text = "房间2
 "
 
 [node name="player" type="CharacterBody3D" parent="." unique_id=1879037750 node_paths=PackedStringArray("camera")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6504989, 0, 0)
 script = ExtResource("3_player")
 camera = NodePath("../mainCamera3D")
 
@@ -168,5 +170,6 @@ shape = SubResource("CapsuleShape3D_player")
 
 [node name="mainCamera3D" type="Camera3D" parent="." unique_id=1040313077]
 transform = Transform3D(0.7071068, -0.24184474, 0.66446304, 0, 0.9396926, 0.34202012, -0.7071068, -0.24184474, 0.66446304, 8, 6.6000147, 8)
+keep_aspect = 0
 current = true
 size = 20.0
