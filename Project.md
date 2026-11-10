@@ -64,6 +64,8 @@ res://
 │  │   └─ room3.tscn              # 房间3
 │  ├─ doors/
 │  │   └─ door_leaf.tscn          # 可交互门扇预制体（被三个房间实例化）
+│  ├─ player/
+│  │   └─ player.tscn             # 玩家预制体（CharacterBody3D + SophiaSkin + 胶囊碰撞），三个房间共用
 │  ├─ props/
 │  │   └─ pumpkin.tscn            # 6 种南瓜模型摆在一起的展示/取模场景
 │  └─ dev/                        # 开发辅助，不参与玩法
@@ -157,7 +159,8 @@ res://
 
 | 节点名 | 谁依赖 | 依赖方式 |
 | --- | --- | --- |
-| `player` | `door.gd` / `room_manager.gd` / `door_leaf.gd` | 必须是**房间根的直接子节点**；`door.gd` 判 `body.name == "player"`，`room_manager` 用 `get_node_or_null("player")` |
+| `player` | `door.gd` / `room_manager.gd` / `door_leaf.gd` | 是 `scenes/player/player.tscn` 的实例，名字必须是 `player`（实例名覆盖为小写），且必须是**房间根的直接子节点**；`door.gd` 判 `body.name == "player"`，`room_manager` 用 `get_node_or_null("player")` |
+| `CollisionShape3D`（在 player 内） | 碰撞体 | 胶囊 `radius=0.35`、`height=1.8`、中心 `y=0.9`，按模型 AABB（高 1.82m）拟合，脚底正好在 y=0 |
 | `mainCamera3D` | `p_3d.gd` 的 `@export var camera` | 场景里存的是 `NodePath("../mainCamera3D")`，所以它必须和 `player` 同级（都在根下） |
 | `SophiaSkin` | `p_3d.gd` | `get_node_or_null("SophiaSkin")`（player 的子节点） |
 | `Hinge` | `door_leaf.gd` | 门轴节点，脚本只转它的 `rotation.y`（`Leaf` / `StaticBody3D` 是它的子节点，所以是绕门框边轴转） |

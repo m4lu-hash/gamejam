@@ -2,9 +2,8 @@
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_o70tu"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://shaders/level_blur.gdshader" id="2_08gkj"]
-[ext_resource type="Script" uid="uid://b1g614wcvrb8v" path="res://scripts/player/p_3d.gd" id="3_player"]
-[ext_resource type="PackedScene" uid="uid://prh35jb6tjtd" path="res://player/sophia_skin/sophia_skin.tscn" id="4_skin"]
 [ext_resource type="Script" uid="uid://26dt7oo43w68" path="res://scripts/rooms/door.gd" id="5_door"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="6_player"]
 [ext_resource type="PackedScene" path="res://scenes/doors/door_leaf.tscn" id="11_doorleaf"]
 
 [sub_resource type="Environment" id="Environment_nq0ms"]
@@ -36,9 +35,6 @@ size = Vector3(0.6, 2.3, 1.4)
 [sub_resource type="BoxShape3D" id="BoxShape3D_door_z"]
 size = Vector3(1.4, 2.3, 0.6)
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
-radius = 0.37646484
-
 [node name="Room2" type="Node3D" unique_id=1136727263]
 
 [node name="Environment" type="Node3D" parent="." unique_id=1268755271]
@@ -65,7 +61,7 @@ material = SubResource("FogMaterial_beyeo")
 mesh_library = ExtResource("1_o70tu")
 cell_size = Vector3(4, 0.1, 4)
 data = {
-"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 0, 65534, 0, 65535, 65534, 0, 65534, 65535, 0, 65534, 0, 0, 65535, 1, 0)
+"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 0, 65534, 0, 65535, 65534, 0, 65534, 65535, 0, 65534, 0, 0)
 }
 
 [node name="Backdrop" type="MeshInstance3D" parent="Geometry" unique_id=403867501]
@@ -157,16 +153,9 @@ pixel_size = 0.05
 text = "房间2
 "
 
-[node name="player" type="CharacterBody3D" parent="." unique_id=1879037750 node_paths=PackedStringArray("camera")]
+[node name="player" parent="." unique_id=909449695 node_paths=PackedStringArray("camera") instance=ExtResource("6_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6504989, 0, 0)
-script = ExtResource("3_player")
 camera = NodePath("../mainCamera3D")
-
-[node name="SophiaSkin" parent="player" unique_id=228298316 instance=ExtResource("4_skin")]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="player" unique_id=312951222]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.84088886, 0)
-shape = SubResource("CapsuleShape3D_player")
 
 [node name="mainCamera3D" type="Camera3D" parent="." unique_id=1040313077]
 transform = Transform3D(0.7071068, -0.24184474, 0.66446304, 0, 0.9396926, 0.34202012, -0.7071068, -0.24184474, 0.66446304, 8, 6.6000147, 8)

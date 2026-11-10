@@ -6,6 +6,7 @@
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://shaders/level_blur.gdshader" id="4_0b4ue"]
 [ext_resource type="Script" uid="uid://26dt7oo43w68" path="res://scripts/rooms/door.gd" id="9_door"]
 [ext_resource type="PackedScene" path="res://scenes/doors/door_leaf.tscn" id="11_doorleaf"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="6_player"]
 
 [sub_resource type="Environment" id="Environment_vkqoe"]
 ambient_light_source = 2
@@ -147,15 +148,8 @@ pixel_size = 0.05
 text = "房间1
 "
 
-[node name="player" type="CharacterBody3D" parent="." unique_id=1131727733 node_paths=PackedStringArray("camera")]
-script = ExtResource("2_oi3di")
+[node name="player" parent="." node_paths=PackedStringArray("camera") instance=ExtResource("6_player")]
 camera = NodePath("../mainCamera3D")
-
-[node name="SophiaSkin" parent="player" unique_id=71180830 instance=ExtResource("2_vonw3")]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="player" unique_id=946860946]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.84088886, -0.016831338)
-shape = SubResource("CapsuleShape3D_vkqoe")
 
 [node name="mainCamera3D" type="Camera3D" parent="." unique_id=954971694]
 transform = Transform3D(0.7071068, -0.24184474, 0.66446304, 0, 0.9396926, 0.34202012, -0.7071068, -0.24184474, 0.66446304, 8, 6.6000147, 8)
