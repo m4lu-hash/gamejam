@@ -16,6 +16,8 @@ class_name  Door
 @export_range(-1.0, 1.0, 0.05) var direction_tolerance := 0.2
 
 var _packed: PackedScene
+## 离本触发器最近的那扇门（用来判断"门开够没有"）
+var _door: Node3D
 
 
 func _ready() -> void:
@@ -25,11 +27,29 @@ func _ready() -> void:
 	_packed = load(target_scene)
 	if _packed == null:
 		push_error("Door: 目标场景加载失败：%s" % target_scene)
+	# 找本房间离门口最近的门（换场瞬间旧场景还在，所以要等一帧）
+	_find_nearby_door.call_deferred()
+
+
+func _find_nearby_door() -> void:
+	var best := 2.5
+	for node in get_tree().get_nodes_in_group("door_leaf"):
+		if node is not Node3D:
+			continue
+		var d := node as Node3D
+		var dist := d.global_position.distance_to(global_position)
+		if dist < best:
+			best = dist
+			_door = d
 
 
 func _on_body_entered(body: Node3D) -> void:
 	if _packed == null or not _is_player(body):
 		return
+	# 门没开到能过人的程度就不放行（防止从半开的门缝里被"挤"出去切换）
+	if _door != null and _door.has_method("get_angle_deg"):
+		if absf(_door.get_angle_deg()) < 40.0:
+			return
 	# 刚切完房间的一小段时间内不响应，避免两个门口来回弹
 	if Time.get_ticks_msec() - RoomManager.last_change_msec < RoomManager.ENTER_GRACE_MSEC:
 		return

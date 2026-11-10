@@ -91,6 +91,11 @@ func _physics_process(delta: float) -> void:
 				_angle = _auto_to
 				_state = State.FREE
 				_ang_vel = 0.0
+			# 兜底：动画卡住（比如被外部改状态）超过两倍时长就强制收尾，避免门永远卡在动画里
+			if _auto_t > auto_open_time * 2.0 + 0.5:
+				_angle = _auto_to
+				_state = State.FREE
+				_ang_vel = 0.0
 		State.FREE:
 			if pushing:
 				_ang_vel += _push_sign * push_accel * delta
