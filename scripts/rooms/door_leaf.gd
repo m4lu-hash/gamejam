@@ -11,7 +11,7 @@ enum State { CLOSED, AUTO_OPENING, FREE, CLOSING }
 ## 最大开合角度（度）
 @export var max_swing_deg := 100.0
 ## 玩家进入多近的范围就自动开门
-@export var open_range := 1.5
+@export var open_range := 2.5
 ## 自动开门动画时长（秒）
 @export var auto_open_time := 0.5
 ## 玩家离开到多远后自动关门

@@ -2,9 +2,9 @@
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_u52ul"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://shaders/level_blur.gdshader" id="4_0b4ue"]
+[ext_resource type="PackedScene" uid="uid://c1w38e5tm11ib" path="res://scenes/player/player.tscn" id="6_player"]
 [ext_resource type="Script" uid="uid://26dt7oo43w68" path="res://scripts/rooms/door.gd" id="9_door"]
-[ext_resource type="PackedScene" path="res://scenes/doors/door_leaf.tscn" id="11_doorleaf"]
-[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="6_player"]
+[ext_resource type="PackedScene" uid="uid://mtsy13i6rbtf" path="res://scenes/doors/door_leaf.tscn" id="11_doorleaf"]
 
 [sub_resource type="Environment" id="Environment_vkqoe"]
 ambient_light_source = 2
@@ -64,7 +64,7 @@ material = SubResource("FogMaterial_vkqoe")
 mesh_library = ExtResource("1_u52ul")
 cell_size = Vector3(4, 0.1, 4)
 data = {
-"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 0, 65534, 0, 65535, 65534, 0)
+"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 0, 65534, 0, 65535, 65534, 0, 65534, 0, 0, 65534, 65535, 0)
 }
 
 [node name="FloorPlane" type="MeshInstance3D" parent="Geometry" unique_id=450198660]
@@ -116,11 +116,6 @@ metadata/_edit_use_anchors_ = true
 
 [node name="DoorLeaf" parent="Doors" unique_id=910492629 instance=ExtResource("11_doorleaf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -4)
-mass = 8.0
-gravity_scale = 0.0
-can_sleep = false
-linear_damp = 1.0
-angular_damp = 1.2
 
 [node name="DoorToRoom2" type="Area3D" parent="Doors" unique_id=2084437538]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -4.5)
@@ -143,7 +138,7 @@ pixel_size = 0.05
 text = "房间1
 "
 
-[node name="player" parent="." node_paths=PackedStringArray("camera") instance=ExtResource("6_player")]
+[node name="player" parent="." unique_id=60396258 node_paths=PackedStringArray("camera") instance=ExtResource("6_player")]
 camera = NodePath("../mainCamera3D")
 
 [node name="mainCamera3D" type="Camera3D" parent="." unique_id=954971694]
