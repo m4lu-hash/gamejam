@@ -25,14 +25,14 @@ func change_room(packed: PackedScene, spawn_name: String = "") -> void:
 	var old_scene := tree.current_scene
 	var old_player := _find_player(old_scene)
 
-	# 记录出发那扇门"门板的世界朝向"，换场后复制给新房间的门
-	var source_dir := Vector3.ZERO
-	var has_source_dir := false
+	# 记录出发那扇门当前的开合角度（大小），换场后按"朝房间内"的方向复制过去
+	var source_angle := 0.0
+	var has_source_angle := false
 	if old_player != null:
-		var src_door := _nearest_door_to(old_player)
-		if src_door != null and src_door.has_method("get_leaf_world_dir"):
-			source_dir = src_door.get_leaf_world_dir()
-			has_source_dir = true
+		var src_door := _nearest_door_to(old_player, old_scene)
+		if src_door != null and src_door.has_method("get_angle_deg"):
+			source_angle = absf(src_door.get_angle_deg())
+			has_source_angle = true
 
 	var new_scene := packed.instantiate()
 
@@ -43,7 +43,7 @@ func change_room(packed: PackedScene, spawn_name: String = "") -> void:
 	var new_player := _find_player(new_scene)
 
 	_apply_spawn(new_player, new_scene, spawn_name)
-	_open_nearest_door(new_player, source_dir, has_source_dir)
+	_open_nearest_door(new_player, new_scene, source_angle, has_source_angle)
 
 	# 继承原来的速度：切换后角色继续沿原方向走，手感更连贯
 	if old_player is CharacterBody3D and new_player is CharacterBody3D:
@@ -88,26 +88,32 @@ func _find_player(root: Node) -> Node3D:
 
 ## 玩家刚落到新房间时，把离他最近的那扇门立刻打开（"像上个场景一样是被推开的"）；
 ## 之后门自己会在玩家走远时自动关上。
-func _open_nearest_door(player: Node3D, source_dir := Vector3.ZERO, has_source_dir := false) -> void:
+func _open_nearest_door(player: Node3D, scene: Node, source_angle := 0.0, has_source_angle := false) -> void:
 	if player == null:
 		return
 
-	var nearest := _nearest_door_to(player)
+	var nearest := _nearest_door_to(player, scene)
 	if nearest == null:
 		return
 
-	# 有上一扇门的朝向就复制过来，否则按"朝房间内"兜底
-	if has_source_dir and nearest.has_method("set_leaf_world_direction"):
-		nearest.set_leaf_world_direction(source_dir)
+	# 复制旧门的开合角度；角度太小（玩家几乎贴着关着的门挤过去）就按全开处理
+	var angle := 100.0
+	if has_source_angle and source_angle >= 20.0:
+		angle = source_angle
+	if nearest.has_method("open_with_animation"):
+		nearest.open_with_animation(angle)
 	elif nearest.has_method("open_instant"):
 		nearest.open_instant()
 
 
-func _nearest_door_to(target: Node3D) -> Node3D:
+func _nearest_door_to(target: Node3D, root: Node = null) -> Node3D:
 	var nearest: Node3D = null
 	var best := 3.2
 	for node in get_tree().get_nodes_in_group("door_leaf"):
 		if node is not Node3D:
+			continue
+		# 只认 root 场景里的门：换场瞬间旧场景还没释放，组里会有两套门
+		if root != null and not root.is_ancestor_of(node):
 			continue
 		var door := node as Node3D
 		var dist := door.global_position.distance_to(target.global_position)
