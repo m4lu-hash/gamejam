@@ -17,10 +17,10 @@ enum State { CLOSED, AUTO_OPENING, FREE, CLOSING }
 @export var push_accel := 14.0
 ## 松手后角速度衰减（rad/s²）
 @export var angular_drag := 6.0
-## 玩家离开到多远后自动关门
-@export var auto_close_distance := 2.8
+## 玩家离开到多远后自动关门（房间 8x8，4m 基本是走到对面了）
+@export var auto_close_distance := 4.0
 ## 玩家走远后多久开始自动关门（秒）
-@export var auto_close_delay := 1.2
+@export var auto_close_delay := 1.5
 ## 关门弹簧刚度 / 阻尼
 @export var close_stiffness := 10.0
 @export var close_damp := 5.0
@@ -106,9 +106,12 @@ func _physics_process(delta: float) -> void:
 				_state = State.CLOSING
 		State.CLOSING:
 			_ang_vel += (-_angle * close_stiffness - _ang_vel * close_damp) * delta
-			if pushing:
+			# 只要玩家还在附近（或又推门），就暂停关门，别让门板扫到人
+			var player_near := player != null and global_position.distance_to(player.global_position) <= auto_close_distance
+			if pushing or player_near:
 				_state = State.FREE
 				_away_time = 0.0
+				_ang_vel = 0.0
 			elif absf(_angle) < deg_to_rad(1.5) and absf(_ang_vel) < 0.2:
 				_snap_closed()
 
