@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://c2wr36xyomcro"
+path="res://.godot/imported/post_lantern_lantern.obj-1286b422f32caa5fac72f4f7bee9fcea.mesh"
+
+[deps]
+
+files=["res://.godot/imported/post_lantern_lantern.obj-1286b422f32caa5fac72f4f7bee9fcea.mesh"]
+
+source_file="res://Assets/obj/post_lantern_lantern.obj"
+dest_files=["res://.godot/imported/post_lantern_lantern.obj-1286b422f32caa5fac72f4f7bee9fcea.mesh", "res://.godot/imported/post_lantern_lantern.obj-1286b422f32caa5fac72f4f7bee9fcea.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
