@@ -2,18 +2,18 @@
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_u52ul"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://shaders/level_blur.gdshader" id="4_0b4ue"]
-[ext_resource type="PackedScene" uid="uid://c1w38e5tm11ib" path="res://scenes/player/player.tscn" id="6_player"]
-[ext_resource type="Script" uid="uid://26dt7oo43w68" path="res://scripts/rooms/door.gd" id="9_door"]
-[ext_resource type="PackedScene" uid="uid://mtsy13i6rbtf" path="res://scenes/doors/door_leaf.tscn" id="11_doorleaf"]
 [ext_resource type="PackedScene" uid="uid://ltls8wvsyj14" path="res://OFFICE/OFFICE/desks/desk1_alt2_weathered.glb" id="5_8cye3"]
 [ext_resource type="PackedScene" uid="uid://ssm88jjcp1su" path="res://OFFICE/OFFICE/computers/computer_monitor.glb" id="6_2orkt"]
+[ext_resource type="PackedScene" uid="uid://c1w38e5tm11ib" path="res://scenes/player/player.tscn" id="6_player"]
 [ext_resource type="PackedScene" uid="uid://bngjmorbftva1" path="res://OFFICE/OFFICE/couches/armchair_red.glb" id="7_aicyk"]
 [ext_resource type="PackedScene" uid="uid://bp7otdskqa5ki" path="res://OFFICE/OFFICE/computers/computer_tower.glb" id="8_8b0r0"]
+[ext_resource type="Script" uid="uid://26dt7oo43w68" path="res://scripts/rooms/door.gd" id="9_door"]
 [ext_resource type="PackedScene" uid="uid://b66k8xqauysxi" path="res://OFFICE/OFFICE/computers/horizontal_desktop.glb" id="9_h6smj"]
 [ext_resource type="PackedScene" uid="uid://bj15j7iefc5oq" path="res://OFFICE/OFFICE/computers/TV.glb" id="10_v5j5c"]
 [ext_resource type="PackedScene" uid="uid://blvhevayj5pye" path="res://PSX-Derelict-Furniture-Standard/glb/fridge.glb" id="11_aicyk"]
+[ext_resource type="PackedScene" uid="uid://mtsy13i6rbtf" path="res://scenes/doors/door_leaf.tscn" id="11_doorleaf"]
 [ext_resource type="PackedScene" uid="uid://f7iwixyl1x5v" path="res://PSX-Derelict-Furniture-Standard/glb/mattress.glb" id="12_8b0r0"]
-[ext_resource type="Script" path="res://scripts/rooms/interactable.gd" id="13_interact"]
+[ext_resource type="Script" uid="uid://c7krn8r3e75uk" path="res://scripts/rooms/interactable.gd" id="13_interact"]
 
 [sub_resource type="Environment" id="Environment_vkqoe"]
 ambient_light_source = 2
@@ -173,31 +173,31 @@ keep_aspect = 0
 current = true
 size = 20.0
 
-[node name="desk1_alt2_weathered2" parent="." instance=ExtResource("5_8cye3")]
+[node name="desk1_alt2_weathered2" parent="." unique_id=1662914444 instance=ExtResource("5_8cye3")]
 transform = Transform3D(0.24665016, 0, 0.9691046, 0, 1, 0, -0.9691046, 0, 0.24665016, -2.8404615, 0, -1.2190607)
 
-[node name="computer_monitor2" parent="." instance=ExtResource("6_2orkt")]
+[node name="computer_monitor2" parent="." unique_id=1887070701 instance=ExtResource("6_2orkt")]
 transform = Transform3D(-0.012576923, 0, 0.999921, 0, 1, 0, -0.999921, 0, -0.012576923, -3.0874143, 0.89651597, -0.69010675)
 
-[node name="armchair_red2" parent="." instance=ExtResource("7_aicyk")]
+[node name="armchair_red2" parent="." unique_id=1612760104 instance=ExtResource("7_aicyk")]
 transform = Transform3D(-0.6981578, 0, -0.71594405, 0, 1, 0, 0.71594405, 0, -0.6981578, 2.926663, 0.049999952, 3.027005)
 
-[node name="computer_monitor3" parent="." instance=ExtResource("6_2orkt")]
+[node name="computer_monitor3" parent="." unique_id=1713703682 instance=ExtResource("6_2orkt")]
 transform = Transform3D(-0.012576982, 0, 0.9999209, 0, 1, 0, -0.9999209, 0, -0.012576982, -3.0820398, 1.462291, -0.6576693)
 
-[node name="computer_tower2" parent="." instance=ExtResource("8_8b0r0")]
+[node name="computer_tower2" parent="." unique_id=1923981206 instance=ExtResource("8_8b0r0")]
 transform = Transform3D(0.48906857, 0, 0.8722454, 0, 1, 0, -0.8722454, 0, 0.48906857, -2.7660398, 1.0871013, -1.9560686)
 
-[node name="horizontal_desktop2" parent="." instance=ExtResource("9_h6smj")]
+[node name="horizontal_desktop2" parent="." unique_id=284076546 instance=ExtResource("9_h6smj")]
 transform = Transform3D(0.9675368, -0.0025542872, -0.2527173, 0.005966529, 0.99990106, 0.012736783, 0.25265974, -0.0138311535, 0.96745634, -2.8645785, 0.8757605, -2.0118477)
 
-[node name="TV2" parent="." instance=ExtResource("10_v5j5c")]
+[node name="TV2" parent="." unique_id=198274508 instance=ExtResource("10_v5j5c")]
 transform = Transform3D(-0.6950707, 0, -0.7189415, 0, 1, 0, 0.7189415, 0, -0.6950707, 2.9783344, 0.64765, 2.8682344)
 
-[node name="fridge" parent="." instance=ExtResource("11_aicyk")]
+[node name="fridge" parent="." unique_id=756377785 instance=ExtResource("11_aicyk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3653133, 0.054859042, 0.70072865)
 
-[node name="mattress" parent="." instance=ExtResource("12_8b0r0")]
+[node name="mattress" parent="." unique_id=579004148 instance=ExtResource("12_8b0r0")]
 transform = Transform3D(-0.61818, 0, 2.2948968, 0, 1, 0, -1.7854807, 0, -0.7945531, 1.7126665, 0.04938948, -1.79362)
 
 [node name="AreaLight3D" type="AreaLight3D" parent="." unique_id=112005015]
@@ -212,49 +212,31 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
 visible = false
 mesh = SubResource("BoxMesh_vkqoe")
 
-[node name="DeskCollision" type="StaticBody3D" parent="."]
+[node name="DeskCollision" type="StaticBody3D" parent="." unique_id=387966869]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8404615, 0.45, -1.2190607)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DeskCollision"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DeskCollision" unique_id=1591842749]
 shape = SubResource("BoxShape3D_desk")
 
-[node name="MattressCollision" type="StaticBody3D" parent="."]
+[node name="MattressCollision" type="StaticBody3D" parent="." unique_id=316451816]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7126665, 0.18, -1.79362)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MattressCollision"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MattressCollision" unique_id=785114143]
 shape = SubResource("BoxShape3D_mattress")
 
-[node name="DeskSit" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 0.35, -1.22)
+[node name="DeskSit" type="Marker3D" parent="." unique_id=1106047797]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.35, -1.22)
 
-[node name="MattressSit" type="Marker3D" parent="."]
+[node name="MattressSit" type="Marker3D" parent="." unique_id=98086179]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.71, 0.35, -1.79)
 
-[node name="DeskInteract" type="Area3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.84, 1.0, -1.22)
-script = ExtResource("13_interact")
-prompt_text = "按 E 坐下"
-sit_point = NodePath("../DeskSit")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DeskInteract"]
-shape = SubResource("SphereShape3D_interact")
-
-[node name="MattressInteract" type="Area3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.71, 1.0, -1.79)
-script = ExtResource("13_interact")
-prompt_text = "按 E 躺下"
-sit_point = NodePath("../MattressSit")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MattressInteract"]
-shape = SubResource("SphereShape3D_interact")
-
-[node name="TVInteract" type="Area3D" parent="."]
+[node name="TVInteract" type="Area3D" parent="." unique_id=245629768]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9, 1.1, 2.9)
 script = ExtResource("13_interact")
 prompt_text = "按 E 开关电视灯光"
 toggle_target = NodePath("../AreaLight3D")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="TVInteract"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TVInteract" unique_id=1617375674]
 shape = SubResource("SphereShape3D_interact")
 
 [node name="FridgeCollision" type="StaticBody3D" parent="."]
