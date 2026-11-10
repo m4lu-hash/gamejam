@@ -47,7 +47,7 @@ size = Vector3(1.3261719, 0.5234375, 2.0257568)
 mesh_library = ExtResource("1_o70tu")
 cell_size = Vector3(4, 0.1, 4)
 data = {
-"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0)
+"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 0, 0, 0, 65535, 0)
 }
 
 [node name="mainCamera3D" type="Camera3D" parent="." unique_id=1040313077]

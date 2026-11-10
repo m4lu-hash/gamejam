@@ -1,6 +1,6 @@
 extends CharacterBody3D
 
-@export var speed = 5.0
+@export var speed = 2.3
 @export var camera: Camera3D  # 在检查器里把场景中的摄像机拖进来
 
 func _physics_process(delta):

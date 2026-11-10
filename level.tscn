@@ -4,6 +4,14 @@
 [ext_resource type="Script" uid="uid://b1g614wcvrb8v" path="res://p_3d.gd" id="2_oi3di"]
 [ext_resource type="PackedScene" uid="uid://prh35jb6tjtd" path="res://meshlibrary/player/sophia_skin/sophia_skin.tscn" id="2_vonw3"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://level.gdshader" id="4_0b4ue"]
+[ext_resource type="PackedScene" uid="uid://ltls8wvsyj14" path="res://OFFICE/OFFICE/desks/desk1_alt2_weathered.glb" id="5_8cye3"]
+[ext_resource type="PackedScene" uid="uid://ssm88jjcp1su" path="res://OFFICE/OFFICE/computers/computer_monitor.glb" id="6_2orkt"]
+[ext_resource type="PackedScene" uid="uid://bngjmorbftva1" path="res://OFFICE/OFFICE/couches/armchair_red.glb" id="7_aicyk"]
+[ext_resource type="PackedScene" uid="uid://bp7otdskqa5ki" path="res://OFFICE/OFFICE/computers/computer_tower.glb" id="8_8b0r0"]
+[ext_resource type="PackedScene" uid="uid://b66k8xqauysxi" path="res://OFFICE/OFFICE/computers/horizontal_desktop.glb" id="9_h6smj"]
+[ext_resource type="PackedScene" uid="uid://bj15j7iefc5oq" path="res://OFFICE/OFFICE/computers/TV.glb" id="10_v5j5c"]
+[ext_resource type="PackedScene" uid="uid://blvhevayj5pye" path="res://PSX-Derelict-Furniture-Standard/glb/fridge.glb" id="11_aicyk"]
+[ext_resource type="PackedScene" uid="uid://f7iwixyl1x5v" path="res://PSX-Derelict-Furniture-Standard/glb/mattress.glb" id="12_8b0r0"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_vkqoe"]
 size = Vector2(8, 8)
@@ -46,6 +54,9 @@ size = Vector2(1.6, 2.3)
 [sub_resource type="BoxShape3D" id="BoxShape3D_gjxql"]
 size = Vector3(1.3261719, 0.5234375, 2.0257568)
 
+[sub_resource type="BoxMesh" id="BoxMesh_vkqoe"]
+size = Vector3(1, 1.6, 1)
+
 [node name="Node3D" type="Node3D" unique_id=13638478]
 
 [node name="GridMap" type="GridMap" parent="." unique_id=1854370980]
@@ -61,12 +72,15 @@ current = true
 size = 20.0
 
 [node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=884022658]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.049096584, 2.0247307, -0.02704525)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.049096584, 3.2066557, -0.02704525)
+visible = false
 light_color = Color(0.78153324, 0.8302539, 0.99999875, 1)
 light_energy = 0.734
 light_indirect_energy = 1.039
 light_volumetric_fog_energy = 1.902
 light_size = 10.0
+omni_range = 6.167
+omni_attenuation = 1.42
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=450198660]
 transform = Transform3D(-4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0, 1, -4, 4, 0)
@@ -107,7 +121,6 @@ grow_vertical = 2
 metadata/_edit_use_anchors_ = true
 
 [node name="FogVolume" type="FogVolume" parent="." unique_id=297761797]
-visible = false
 size = Vector3(6, 0.3, 6)
 material = SubResource("FogMaterial_vkqoe")
 
@@ -141,3 +154,42 @@ mesh = SubResource("PlaneMesh_yddip")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D2/StaticBody3D" unique_id=1781612227]
 transform = Transform3D(1, 0, 0, 0, 1, -9.414691e-13, 0, 0, 1, -0.019531248, -0.23828125, 0.02557379)
 shape = SubResource("BoxShape3D_gjxql")
+
+[node name="desk1_alt2_weathered2" parent="." unique_id=316330516 instance=ExtResource("5_8cye3")]
+transform = Transform3D(0.24665016, 0, 0.9691046, 0, 1, 0, -0.9691046, 0, 0.24665016, -2.8404615, 0, -1.2190607)
+
+[node name="computer_monitor2" parent="." unique_id=1999061022 instance=ExtResource("6_2orkt")]
+transform = Transform3D(-0.012576923, 0, 0.999921, 0, 1, 0, -0.999921, 0, -0.012576923, -3.0874143, 0.89651597, -0.69010675)
+
+[node name="armchair_red2" parent="." unique_id=323879724 instance=ExtResource("7_aicyk")]
+transform = Transform3D(-0.6981578, 0, -0.71594405, 0, 1, 0, 0.71594405, 0, -0.6981578, 2.926663, 0.049999952, 3.027005)
+
+[node name="computer_monitor3" parent="." unique_id=81972920 instance=ExtResource("6_2orkt")]
+transform = Transform3D(-0.012576982, 0, 0.9999209, 0, 1, 0, -0.9999209, 0, -0.012576982, -3.0820398, 1.462291, -0.6576693)
+
+[node name="computer_tower2" parent="." unique_id=881471609 instance=ExtResource("8_8b0r0")]
+transform = Transform3D(0.48906857, 0, 0.8722454, 0, 1, 0, -0.8722454, 0, 0.48906857, -2.7660398, 1.0871013, -1.9560686)
+
+[node name="horizontal_desktop2" parent="." unique_id=852708404 instance=ExtResource("9_h6smj")]
+transform = Transform3D(0.9675368, -0.0025542872, -0.2527173, 0.005966529, 0.99990106, 0.012736783, 0.25265974, -0.0138311535, 0.96745634, -2.8645785, 0.8757605, -2.0118477)
+
+[node name="TV2" parent="." unique_id=1248096266 instance=ExtResource("10_v5j5c")]
+transform = Transform3D(-0.6950707, 0, -0.7189415, 0, 1, 0, 0.7189415, 0, -0.6950707, 2.9783344, 0.64765, 2.8682344)
+
+[node name="fridge" parent="." unique_id=6962565 instance=ExtResource("11_aicyk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3653133, 0.054859042, 0.70072865)
+
+[node name="mattress" parent="." unique_id=219207364 instance=ExtResource("12_8b0r0")]
+transform = Transform3D(-0.61818, 0, 2.2948968, 0, 1, 0, -1.7854807, 0, -0.7945531, 1.7126665, 0.04938948, -1.79362)
+
+[node name="AreaLight3D" type="AreaLight3D" parent="." unique_id=112005015]
+transform = Transform3D(0.69545966, 0, 0.7185651, 0, 1, 0, -0.7185651, 0, 0.69545966, 2.7541254, 1.0130554, 2.8307676)
+light_color = Color(0.77, 0.89650005, 1, 1)
+light_energy = 3.084
+light_indirect_energy = 1.285
+area_attenuation = 1.114
+
+[node name="inch" type="MeshInstance3D" parent="." unique_id=409492642]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+visible = false
+mesh = SubResource("BoxMesh_vkqoe")
