@@ -2,6 +2,10 @@
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://meshlibrary/floor.meshlib" id="1_htvxh"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://level.gdshader" id="2_vddjn"]
+[ext_resource type="Script" path="res://p_3d.gd" id="3_player"]
+[ext_resource type="PackedScene" path="res://meshlibrary/player/sophia_skin/sophia_skin.tscn" id="4_skin"]
+[ext_resource type="Script" path="res://door.gd" id="5_door"]
+[ext_resource type="PackedScene" path="res://door_leaf.tscn" id="11_doorleaf"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_16a5g"]
 size = Vector2(8, 8)
@@ -40,6 +44,12 @@ size = Vector2(1.6, 2.3)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_f034r"]
 size = Vector3(1.3261719, 0.5234375, 2.0257568)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
+radius = 0.37646484
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_door_x"]
+size = Vector3(0.6, 2.3, 1.4)
 
 [node name="Node3D" type="Node3D" unique_id=602838772]
 
@@ -92,7 +102,6 @@ grow_vertical = 2
 metadata/_edit_use_anchors_ = true
 
 [node name="FogVolume" type="FogVolume" parent="." unique_id=1703102644]
-visible = false
 size = Vector3(6, 0.3, 6)
 material = SubResource("FogMaterial_cc7fx")
 
@@ -102,7 +111,7 @@ use_collision = true
 size = Vector3(8, 8, 0.1)
 
 [node name="CSGBox3D" type="CSGBox3D" parent="doorwall" unique_id=1170274476]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7891331, -0.21917725)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.81, 0)
 operation = 2
 size = Vector3(1.6, 2.3, 0.562)
 
@@ -116,13 +125,35 @@ shape = SubResource("BoxShape3D_5n67b")
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 4, 4, 0)
 shape = SubResource("BoxShape3D_5n67b")
 
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=200244019]
-transform = Transform3D(-5.488879e-08, 1, -5.3622987e-08, 0, -4.371139e-08, -1.226751, -1.2557092, -4.371139e-08, 2.3439352e-15, -4, 5.849827, 0)
-material_override = SubResource("StandardMaterial3D_ikmp0")
-mesh = SubResource("PlaneMesh_l5wei")
+[node name="DoorLeafLeft" parent="." instance=ExtResource("11_doorleaf")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, -0.8)
+open_angle_deg = -90.0
 
-[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D2" unique_id=542386401]
+[node name="Label3D" type="Label3D" parent="." unique_id=1481211202]
+transform = Transform3D(0.70130914, 5.9604645e-08, 0.7128576, 1.1641532e-09, 1.0000007, -2.9802322e-08, -0.7128574, 5.9604645e-08, 0.7013092, -1.8752012, 5.9084415, -1.6030788)
+pixel_size = 0.05
+text = "房间3
+"
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D2/StaticBody3D" unique_id=907197411]
-transform = Transform3D(1, 0, 0, 0, 1, -9.414691e-13, 0, 0, 1, -0.019531248, -0.23828125, 0.02557379)
-shape = SubResource("BoxShape3D_f034r")
+[node name="player" type="CharacterBody3D" parent="." node_paths=PackedStringArray("camera")]
+script = ExtResource("3_player")
+camera = NodePath("../mainCamera3D")
+
+[node name="SophiaSkin" parent="player" instance=ExtResource("4_skin")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.84088886, 0)
+shape = SubResource("CapsuleShape3D_player")
+
+[node name="SpawnFromRoom2" type="Marker3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -2.2, 0, 0)
+
+[node name="DoorToRoom2" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 1.2, 0)
+script = ExtResource("5_door")
+target_scene = "res://room2.tscn"
+target_spawn = "SpawnFromRoom3"
+exit_direction = Vector3(-1, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DoorToRoom2"]
+shape = SubResource("BoxShape3D_door_x")

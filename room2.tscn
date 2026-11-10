@@ -2,6 +2,10 @@
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://meshlibrary/floor.meshlib" id="1_o70tu"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://level.gdshader" id="2_08gkj"]
+[ext_resource type="Script" path="res://p_3d.gd" id="3_player"]
+[ext_resource type="PackedScene" path="res://meshlibrary/player/sophia_skin/sophia_skin.tscn" id="4_skin"]
+[ext_resource type="Script" path="res://door.gd" id="5_door"]
+[ext_resource type="PackedScene" path="res://door_leaf.tscn" id="11_doorleaf"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_j7v4n"]
 size = Vector2(8, 8)
@@ -41,6 +45,15 @@ size = Vector2(1.6, 2.3)
 [sub_resource type="BoxShape3D" id="BoxShape3D_jykgh"]
 size = Vector3(1.3261719, 0.5234375, 2.0257568)
 
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
+radius = 0.37646484
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_door_z"]
+size = Vector3(1.4, 2.3, 0.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_door_x"]
+size = Vector3(0.6, 2.3, 1.4)
+
 [node name="Node3D" type="Node3D" unique_id=1136727263]
 
 [node name="GridMap" type="GridMap" parent="." unique_id=1697178982]
@@ -63,14 +76,15 @@ light_indirect_energy = 1.039
 light_volumetric_fog_energy = 1.902
 light_size = 10.0
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=2014331729]
-transform = Transform3D(1.9106855e-15, -4.371139e-08, -1, -1, -4.371139e-08, 0, -4.371139e-08, 1, -4.371139e-08, 0, 4, -4)
-mesh = SubResource("PlaneMesh_j7v4n")
+[node name="doorwall2" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -4)
+use_collision = true
+size = Vector3(8, 8, 0.1)
 
-[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D" unique_id=2039546460]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D" unique_id=379766584]
-shape = SubResource("ConcavePolygonShape3D_kgaip")
+[node name="CSGBox3D" type="CSGBox3D" parent="doorwall2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.8136938, -0.21917725)
+operation = 2
+size = Vector3(1.6, 2.3, 0.562)
 
 [node name="MeshInstance3D3" type="MeshInstance3D" parent="." unique_id=403867501]
 transform = Transform3D(-4.2433844, 26.78573, -26.578835, 20.92186, 11.035103, 0.28732264, -4.4323792, 26.44462, 26.801771, -8.211327, 0, -7.8715534)
@@ -116,13 +130,52 @@ shape = SubResource("BoxShape3D_1id8r")
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 4, 4, 0)
 shape = SubResource("BoxShape3D_1id8r")
 
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=1418428617]
-transform = Transform3D(-5.488879e-08, 1, -5.3622987e-08, 0, -4.371139e-08, -1.226751, -1.2557092, -4.371139e-08, 2.3439352e-15, -4, 1.247, 0)
-material_override = SubResource("StandardMaterial3D_cv072")
-mesh = SubResource("PlaneMesh_iuj6i")
+[node name="DoorLeafLeft" parent="." instance=ExtResource("11_doorleaf")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, -0.8)
+open_angle_deg = -90.0
 
-[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D2" unique_id=1698991201]
+[node name="DoorLeafBack" parent="." instance=ExtResource("11_doorleaf")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -4)
+open_angle_deg = 95.0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D2/StaticBody3D" unique_id=1215188767]
-transform = Transform3D(1, 0, 0, 0, 1, -9.414691e-13, 0, 0, 1, -0.019531248, -0.23828125, 0.02557379)
-shape = SubResource("BoxShape3D_jykgh")
+[node name="Label3D" type="Label3D" parent="." unique_id=1644782252]
+transform = Transform3D(0.70130914, 5.9604645e-08, 0.7128576, 1.1641532e-09, 1.0000007, -2.9802322e-08, -0.7128574, 5.9604645e-08, 0.7013092, -1.8752012, 5.9084415, -1.6030788)
+pixel_size = 0.05
+text = "房间2
+"
+
+[node name="player" type="CharacterBody3D" parent="." node_paths=PackedStringArray("camera")]
+script = ExtResource("3_player")
+camera = NodePath("../mainCamera3D")
+
+[node name="SophiaSkin" parent="player" instance=ExtResource("4_skin")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.84088886, 0)
+shape = SubResource("CapsuleShape3D_player")
+
+[node name="SpawnFromRoom1" type="Marker3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -2.2, 0, 0)
+
+[node name="SpawnFromRoom3" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.2)
+
+[node name="DoorToRoom1" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 1.2, 0)
+script = ExtResource("5_door")
+target_scene = "res://level.tscn"
+target_spawn = "SpawnFromRoom2"
+exit_direction = Vector3(-1, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DoorToRoom1"]
+shape = SubResource("BoxShape3D_door_x")
+
+[node name="DoorToRoom3" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -4.5)
+script = ExtResource("5_door")
+target_scene = "res://room3.tscn"
+target_spawn = "SpawnFromRoom2"
+exit_direction = Vector3(0, 0, -1)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DoorToRoom3"]
+shape = SubResource("BoxShape3D_door_z")
