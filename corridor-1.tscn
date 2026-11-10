@@ -41,7 +41,7 @@ size = Vector3(0.6, 2.3, 1.4)
 mesh_library = ExtResource("1_rfeqg")
 cell_size = Vector3(4, 0.1, 4)
 data = {
-"cells": PackedInt32Array(65535, 1, 0, 65535, 0, 0, 65535, 65535, 0, 65535, 65534, 0, 65535, 65532, 0, 65535, 65533, 0, 65534, 65534, 0, 65534, 65533, 0, 65534, 65532, 0)
+"cells": PackedInt32Array(65535, 1, 0, 65535, 0, 0, 65535, 65535, 0, 65535, 65534, 0, 65535, 65532, 0, 65535, 65533, 0, 65534, 65534, 0, 65534, 65533, 0, 65534, 65532, 0, 65534, 1, 0)
 }
 
 [node name="mainCamera3D" type="Camera3D" parent="." unique_id=1879865743]
@@ -128,13 +128,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0, 4)
 camera = NodePath("../mainCamera3D")
 
 [node name="SpawnFromRoom1" type="Marker3D" parent="." unique_id=1633381508]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -3.2, 0, 4)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -3.2, 0, 4)
 
 [node name="SpawnFromRoom2" type="Marker3D" parent="." unique_id=1805879273]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -3.2, 0, -4)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -3.2, 0, -4)
 
 [node name="SpawnFromRoom3" type="Marker3D" parent="." unique_id=464958130]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -3.2, 0, -12)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -3.2, 0, -12)
 
 [node name="DoorLeafRoom1" parent="." unique_id=653515857 instance=ExtResource("4_doorleaf")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, 3.2)
@@ -174,3 +174,4 @@ exit_direction = Vector3(-1, 0, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DoorToRoom3" unique_id=1384592907]
 shape = SubResource("BoxShape3D_door")
+
