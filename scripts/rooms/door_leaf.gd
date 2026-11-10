@@ -174,6 +174,11 @@ func get_angle_deg() -> float:
 	return rad_to_deg(_angle)
 
 
+## 调试用：推门方向符号（+1 / -1）
+func get_push_sign() -> float:
+	return _push_sign
+
+
 ## 门板当前世界朝向（调试/测试用）
 func get_leaf_world_dir() -> Vector3:
 	var dir := hinge.global_transform.basis.x
@@ -208,10 +213,15 @@ func _update_away_time(player: Node3D, delta: float) -> void:
 
 func _compute_directions() -> void:
 	var outward := _outward_dir()
-	var open_deg := rad_to_deg(_closed_leaf_dir.signed_angle_to(outward, Vector3.UP))
-	_push_sign = signf(open_deg)
-	if is_zero_approx(_push_sign):
-		_push_sign = 1.0
+
+	# 直接试：把门板绕 Y 轴转 +90° 和 -90°，哪边更接近"房间外"，哪边就是推门方向。
+	# 不依赖 atan2/signed_angle_to 的符号约定。
+	var basis := hinge.global_transform.basis
+	var leaf_local := Vector3(1.0, 0.0, 0.0)
+	var dir_plus: Vector3 = (basis * Basis(Vector3.UP, PI / 2.0)) * leaf_local
+	var dir_minus: Vector3 = (basis * Basis(Vector3.UP, -PI / 2.0)) * leaf_local
+
+	_push_sign = 1.0 if dir_plus.dot(outward) >= dir_minus.dot(outward) else -1.0
 	_inward_sign = -_push_sign
 
 
