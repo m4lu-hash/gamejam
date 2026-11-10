@@ -74,7 +74,7 @@ func _physics_process(delta):
 	global_transform = global_transform.orthonormalized()
 	move_and_slide()
 	global_transform = global_transform.orthonormalized()
-	get_viewport().scaling_3d_scale = 0.40
+	#get_viewport().scaling_3d_scale = 0.40
 
 	# move_and_slide 之后才判断落地/腾空，这样起跳当帧就能切到 Jump
 	_update_anim_state(wants_move)

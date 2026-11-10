@@ -10,9 +10,11 @@ extends Node3D
 ## 开门动画时长（秒）
 @export var swing_time := 0.45
 ## 玩家离门中心多近、并且朝门方向走时，会用身体把门顶开
-@export var push_range := 1.5
+@export var push_range := 0.9
 ## "朝门走"的判定阈值：速度方向与"玩家→门中心"方向的点积
 @export var push_direction_dot := 0.45
+## 被传送到新房间时，门口这扇门是"从另一侧推过去"的，所以朝房间内开着（与推门方向相反）
+@export var arrive_opens_inward := true
 ## 玩家离开到多远后自动关门
 @export var auto_close_distance := 2.8
 ## 玩家走远后多久自动关门（秒）
@@ -41,7 +43,14 @@ func open_instant() -> void:
 	_away_time = 0.0
 	if _tween != null and _tween.is_valid():
 		_tween.kill()
-	pivot.rotation.y = _closed_y + deg_to_rad(open_angle_deg)
+	pivot.rotation.y = _closed_y + deg_to_rad(_arrive_angle())
+
+
+## 传送到达时的开门角度：默认是推开方向的反向（从另一侧推过来，门朝本房间内开着）
+func _arrive_angle() -> float:
+	if arrive_opens_inward:
+		return -open_angle_deg
+	return open_angle_deg
 
 
 ## 开始推开门（播放绕合页的旋转动画）
