@@ -23,17 +23,27 @@ func change_room(packed: PackedScene, spawn_name: String = "") -> void:
 
 	var tree := get_tree()
 	var old_scene := tree.current_scene
+	var old_player := _find_player(old_scene)
+
+	# 记录出发那扇门"门板的世界朝向"，换场后复制给新房间的门
+	var source_dir := Vector3.ZERO
+	var has_source_dir := false
+	if old_player != null:
+		var src_door := _nearest_door_to(old_player)
+		if src_door != null and src_door.has_method("get_leaf_world_dir"):
+			source_dir = src_door.get_leaf_world_dir()
+			has_source_dir = true
+
 	var new_scene := packed.instantiate()
 
 	# 先把新房间挂进来（旧房间还在，屏幕上不会出现空帧）
 	tree.root.add_child(new_scene)
 	tree.current_scene = new_scene
 
-	var old_player := _find_player(old_scene)
 	var new_player := _find_player(new_scene)
 
 	_apply_spawn(new_player, new_scene, spawn_name)
-	_open_nearest_door(new_player)
+	_open_nearest_door(new_player, source_dir, has_source_dir)
 
 	# 继承原来的速度：切换后角色继续沿原方向走，手感更连贯
 	if old_player is CharacterBody3D and new_player is CharacterBody3D:
@@ -78,20 +88,30 @@ func _find_player(root: Node) -> Node3D:
 
 ## 玩家刚落到新房间时，把离他最近的那扇门立刻打开（"像上个场景一样是被推开的"）；
 ## 之后门自己会在玩家走远时自动关上。
-func _open_nearest_door(player: Node3D) -> void:
+func _open_nearest_door(player: Node3D, source_dir := Vector3.ZERO, has_source_dir := false) -> void:
 	if player == null:
 		return
 
+	var nearest := _nearest_door_to(player)
+	if nearest == null:
+		return
+
+	# 有上一扇门的朝向就复制过来，否则按"朝房间内"兜底
+	if has_source_dir and nearest.has_method("set_leaf_world_direction"):
+		nearest.set_leaf_world_direction(source_dir)
+	elif nearest.has_method("open_instant"):
+		nearest.open_instant()
+
+
+func _nearest_door_to(target: Node3D) -> Node3D:
 	var nearest: Node3D = null
 	var best := 3.2
 	for node in get_tree().get_nodes_in_group("door_leaf"):
 		if node is not Node3D:
 			continue
 		var door := node as Node3D
-		var dist := door.global_position.distance_to(player.global_position)
+		var dist := door.global_position.distance_to(target.global_position)
 		if dist < best:
 			best = dist
 			nearest = door
-
-	if nearest != null and nearest.has_method("open_instant"):
-		nearest.open_instant()
+	return nearest

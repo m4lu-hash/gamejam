@@ -1,105 +1,124 @@
-extends RigidBody3D
-## 真物理门扇：RigidBody3D + 脚本实现的合页约束。
+extends Node3D
+## 门扇：只转 Hinge 节点的 Y 轴（合页在门框边缘），所以是绕边轴旋转，不是绕门板中心。
 ##
-## 为什么不用 HingeJoint3D：这个 Godot 版本的关节在该项目里表现不可靠（最小场景复现过，
-## 门根本不按预期轴旋转）。这里改用 `_integrate_forces` 手动锁死：位置钉在合页上、
-## 只允许绕 Y 轴转，角速度/质量/冲量仍是真实物理。
+## 推动是**物理式**的，不是 tween 动画：
+##   玩家顶着门走 -> 角速度按角加速度累积
+##   松手 -> 角速度按阻尼衰减（有惯性、会多转一点）
+##   玩家走远一段时间 -> 弹簧把门拉回关闭
+##   角度 = 对角速度做积分，碰撞/限位都在这个积分过程里处理。
 ##
-## 场景结构：DoorLeaf(容器) → DoorBody(RigidBody3D，本脚本) → Leaf / CollisionShape3D
-## 开门方向自动计算：门板朝"房间外"的方向 = 被推开的方向；玩家传送到达时门朝房间内。
+## 开门方向由几何自动算：门板朝向 -> 房间外 = 推开方向。
+## 跨房间时由 RoomManager 把上一扇门的"门板世界朝向"复制过来（见 set_leaf_world_direction）。
 
-## 被传送到新房间时，门朝房间内开着（从另一侧推过去的）
-@export var arrive_opens_inward := true
+## 最大开合角度（度）
+@export var max_swing_deg := 100.0
+## 玩家离门板多近算"在推门"
+@export var push_range := 1.4
+## 推门时的角加速度（rad/s²），越大越轻
+@export var push_accel := 14.0
+## 松手后的角速度衰减（rad/s²），越大越"涩"
+@export var angular_drag := 6.0
 ## 玩家离开到多远后自动关门
 @export var auto_close_distance := 2.8
 ## 玩家走远后多久开始自动关门（秒）
 @export var auto_close_delay := 1.2
 ## 关门弹簧刚度 / 阻尼
-@export var close_stiffness := 60.0
-@export var close_damping := 8.0
-## 角速度上限，防止被推飞
+@export var close_stiffness := 10.0
+@export var close_damp := 5.0
+## 角速度上限
 @export var max_angular_speed := 5.0
-## 最大开合角度（度），超过就夹住
-@export var max_swing_deg := 100.0
-## 玩家顶着门走时施加的力矩（牛·米/秒）
-@export var push_torque := 26.0
-## 玩家离门多近算"在推门"
-@export var push_range := 1.4
 ## 是否一开局就处于打开状态
 @export var open_on_start := false
 
 ## 门是否处于打开状态（角度超过阈值）
 var is_open := false
 
-var _hinge_origin := Vector3.ZERO
-var _closed_y := 0.0
-var _closed_basis := Basis.IDENTITY
-var _outward_deg := 90.0
-var _inward_deg := -90.0
+var _angle := 0.0          # 当前角度（弧度，0 = 关闭）
+var _ang_vel := 0.0        # 角速度（rad/s）
 var _away_time := 0.0
 var _closing := false
+var _push_sign := 1.0      # 推开时角度的符号（由几何自动算）
+var _closed_leaf_dir := Vector3.FORWARD  # 关闭时门板的世界朝向
 var _last_player_pos := Vector3.ZERO
 var _has_last_pos := false
+
+@onready var hinge: Node3D = $Hinge
 
 
 func _ready() -> void:
 	add_to_group("door_leaf")
-	_closed_y = rotation.y
-	_closed_basis = global_transform.basis
-	_hinge_origin = global_position
-	can_sleep = false
-	_compute_open_direction()
+	hinge.rotation.y = 0.0
+	_closed_leaf_dir = hinge.global_transform.basis.x
+	_closed_leaf_dir.y = 0.0
+	if _closed_leaf_dir.length() > 0.001:
+		_closed_leaf_dir = _closed_leaf_dir.normalized()
+	_compute_push_direction()
 	if open_on_start:
 		open_instant()
 
 
-## 合页约束由场景里的 axis_lock_* 提供：锁死三轴平移 + 锁死 X/Z 旋转，只允许绕 Y 旋转。
-## 设置角度必须走 _integrate_forces（物理服务器会覆盖冻结时的 transform）。
-
-var _pending_angle := INF  # 待设置的角度（度），INF 表示没有
-
-
-func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
-	state.linear_velocity = Vector3.ZERO
-	if _pending_angle != INF:
-		var t := state.transform
-		t.basis = _closed_basis * Basis(Vector3.UP, deg_to_rad(_pending_angle))
-		state.transform = t
-		state.angular_velocity = Vector3.ZERO
-		_pending_angle = INF
-
-
 func _physics_process(delta: float) -> void:
-	var angle := _angle()
+	var player := _find_player()
 
-	if absf(angle) > deg_to_rad(8.0):
+	if player != null:
+		_update_push(player, delta)
+		_update_auto_close(player, delta)
+
+	if _closing:
+		# 弹簧 + 阻尼
+		_ang_vel += (-_angle * close_stiffness - _ang_vel * close_damp) * delta
+		if absf(_angle) < deg_to_rad(1.5) and absf(_ang_vel) < 0.2:
+			_snap_closed()
+	else:
+		# 松手后按阻尼衰减（这就是"惯性"的来源）
+		_ang_vel = move_toward(_ang_vel, 0.0, angular_drag * delta)
+
+	_ang_vel = clampf(_ang_vel, -max_angular_speed, max_angular_speed)
+
+	# 对角速度积分得到角度
+	_angle += _ang_vel * delta
+
+	var limit := deg_to_rad(max_swing_deg)
+	if _angle > limit:
+		_angle = limit
+		_ang_vel = minf(_ang_vel, 0.0)
+	elif _angle < -limit:
+		_angle = -limit
+		_ang_vel = maxf(_ang_vel, 0.0)
+
+	hinge.rotation.y = _angle
+
+	if absf(_angle) > deg_to_rad(8.0):
 		is_open = true
-	elif absf(angle) < deg_to_rad(2.0):
+	elif absf(_angle) < deg_to_rad(2.0):
 		is_open = false
 
-	_update_auto_close(delta)
-	_update_push(delta)
 
-	# 自动关门：弹簧 + 阻尼（轴锁刚体要用角冲量，apply_torque 会被锁掉）
-	if _closing:
-		var torque := -angle * close_stiffness - angular_velocity.y * close_damping
-		apply_torque_impulse(Vector3(0.0, torque * delta, 0.0))
-		if absf(angle) < deg_to_rad(1.5) and absf(angular_velocity.y) < 0.25:
-			_snap_closed()
-
-	# 限速 + 软件限位
-	if absf(angular_velocity.y) > max_angular_speed:
-		angular_velocity = Vector3(angular_velocity.x, signf(angular_velocity.y) * max_angular_speed, angular_velocity.z)
-	angle = _angle()
-	if absf(angle) > deg_to_rad(max_swing_deg) and not _closing:
-		_set_angle(signf(angle) * max_swing_deg)
-
-
-func _update_auto_close(delta: float) -> void:
-	var player := _find_player()
-	if player == null:
+## 玩家贴着门、并且还在朝门走 -> 给门角加速度（推门）
+func _update_push(player: Node3D, delta: float) -> void:
+	var pos := player.global_position
+	var move := pos - _last_player_pos
+	_last_player_pos = pos
+	if not _has_last_pos:
+		_has_last_pos = true
 		return
 
+	move.y = 0.0
+	if move.length() < 0.002:
+		return
+
+	var leaf_center: Vector3 = hinge.global_transform * Vector3(0.8, 0.0, 0.0)
+	var to_leaf: Vector3 = leaf_center - pos
+	to_leaf.y = 0.0
+	if to_leaf.length() > push_range or to_leaf.length() < 0.001:
+		return
+	if move.normalized().dot(to_leaf.normalized()) < 0.3:
+		return
+
+	_ang_vel += _push_sign * push_accel * delta
+
+
+func _update_auto_close(player: Node3D, delta: float) -> void:
 	var dist := global_position.distance_to(player.global_position)
 	if dist > auto_close_distance:
 		_away_time += delta
@@ -110,68 +129,50 @@ func _update_auto_close(delta: float) -> void:
 		_closing = false
 
 
-## 玩家贴着门、并且还在朝门走 -> 给门一个力矩把它顶开
-## （门是轴锁刚体，线性冲量会被锁掉，只能用力矩冲量）
-func _update_push(delta: float) -> void:
-	var player := _find_player()
-	if player == null:
+## 被传送到新房间时：把上一扇门的"门板世界朝向"复制过来
+func set_leaf_world_direction(world_dir: Vector3) -> void:
+	var dir := world_dir
+	dir.y = 0.0
+	if dir.length() < 0.001:
+		open_instant()
 		return
+	dir = dir.normalized()
 
-	var pos := player.global_position
-	var move := pos - _last_player_pos
-	_last_player_pos = pos
-	if not _has_last_pos:
-		_has_last_pos = true
-		return
-
-	move.y = 0.0
-	if move.length() < 0.005:
-		return
-
-	var leaf_center: Vector3 = global_transform * Vector3(0.8, 0.0, 0.0)
-	var to_leaf: Vector3 = leaf_center - pos
-	to_leaf.y = 0.0
-	if to_leaf.length() > push_range or to_leaf.length() < 0.001:
-		return
-	if move.normalized().dot(to_leaf.normalized()) < 0.3:
-		return
-
-	var torque_sign := signf(_outward_deg)
-	if torque_sign == 0.0:
-		torque_sign = 1.0
-	apply_torque_impulse(Vector3(0.0, torque_sign * push_torque * delta, 0.0))
-
-
-## 玩家刚被传送到新房间：门立刻摆到"从另一侧被推开"的姿态（朝房间内）
-func open_instant() -> void:
-	_set_angle(_inward_deg if arrive_opens_inward else _outward_deg)
-	is_open = true
+	var target_deg := rad_to_deg(_closed_leaf_dir.signed_angle_to(dir, Vector3.UP))
+	_angle = clampf(deg_to_rad(target_deg), -deg_to_rad(max_swing_deg), deg_to_rad(max_swing_deg))
+	_ang_vel = 0.0
 	_closing = false
 	_away_time = 0.0
+	hinge.rotation.y = _angle
+	is_open = absf(_angle) > deg_to_rad(2.0)
 
 
-## 需要脚本直接开门时调用（正常玩法由玩家身体推动）
-func open() -> void:
-	_closing = false
-	apply_torque_impulse(Vector3(0.0, deg_to_rad(_outward_deg) * 30.0, 0.0))
+## 兜底：没有可复制的朝向时，门朝房间内开着（从另一侧推过来）
+func open_instant() -> void:
+	var outward := _outward_dir()
+	set_leaf_world_direction(-outward)
 
 
-## 开始自动关门
-func close() -> void:
-	_closing = true
+## 当前门板的世界朝向（跨房间复制用）
+func get_leaf_world_dir() -> Vector3:
+	var dir := hinge.global_transform.basis.x
+	dir.y = 0.0
+	return dir.normalized()
 
 
-## 当前开合角度（度），正负表示两个方向
+## 当前开合角度（度）
 func get_angle_deg() -> float:
-	return rad_to_deg(_angle())
+	return rad_to_deg(_angle)
 
 
-func _angle() -> float:
-	return wrapf(rotation.y - _closed_y, -PI, PI)
+func _compute_push_direction() -> void:
+	var outward := _outward_dir()
+	_push_sign = signf(_closed_leaf_dir.signed_angle_to(outward, Vector3.UP))
+	if is_zero_approx(_push_sign):
+		_push_sign = 1.0
 
 
-## 门板初始方向（合页指向门板中心）与"房间外"方向的夹角 = 推开角度
-func _compute_open_direction() -> void:
+func _outward_dir() -> Vector3:
 	var room := get_tree().current_scene
 	var room_center := Vector3.ZERO
 	if room is Node3D:
@@ -180,27 +181,14 @@ func _compute_open_direction() -> void:
 	var outward: Vector3 = global_position - room_center
 	outward.y = 0.0
 	if outward.length() < 0.01:
-		outward = Vector3.FORWARD
-	outward = outward.normalized()
-
-	var leaf_dir := global_transform.basis.x
-	leaf_dir.y = 0.0
-	if leaf_dir.length() < 0.01:
-		return
-	leaf_dir = leaf_dir.normalized()
-
-	_outward_deg = rad_to_deg(leaf_dir.signed_angle_to(outward, Vector3.UP))
-	_inward_deg = -_outward_deg
-
-
-func _set_angle(deg: float) -> void:
-	_pending_angle = deg
-	angular_velocity = Vector3.ZERO
-	linear_velocity = Vector3.ZERO
+		return Vector3.FORWARD
+	return outward.normalized()
 
 
 func _snap_closed() -> void:
-	_set_angle(0.0)
+	_angle = 0.0
+	_ang_vel = 0.0
+	hinge.rotation.y = 0.0
 	is_open = false
 	_closing = false
 

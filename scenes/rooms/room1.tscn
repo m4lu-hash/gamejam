@@ -120,6 +120,11 @@ metadata/_edit_use_anchors_ = true
 
 [node name="DoorLeaf" parent="Doors" unique_id=910492629 instance=ExtResource("11_doorleaf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -4)
+mass = 8.0
+gravity_scale = 0.0
+can_sleep = false
+linear_damp = 1.0
+angular_damp = 1.2
 
 [node name="DoorToRoom2" type="Area3D" parent="Doors" unique_id=2084437538]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -4.5)
@@ -149,7 +154,7 @@ camera = NodePath("../mainCamera3D")
 [node name="SophiaSkin" parent="player" unique_id=71180830 instance=ExtResource("2_vonw3")]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="player" unique_id=946860946]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.84088886, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.84088886, -0.016831338)
 shape = SubResource("CapsuleShape3D_vkqoe")
 
 [node name="mainCamera3D" type="Camera3D" parent="." unique_id=954971694]
