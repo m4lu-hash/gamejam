@@ -241,16 +241,16 @@ Z 向门 `Vector3(1.4, 2.3, 0.6)`，X 向门 `Vector3(0.6, 2.3, 1.4)`。
 
 ## 5. 素材规范
 
-### 四种格式的关系
+### 素材格式
 
-`Assets/models/` 下是**同一套万圣节模型**的四种导出格式：
+`Assets/models/` 下现在只剩两套：
 
 | 目录 | 内容 | 状态 |
 | --- | --- | --- |
 | `fbx/` | 63 个 `.fbx` + `.import` | **游戏实际使用的格式**（`scenes/props/pumpkin.tscn` 引用） |
-| `fbx_unity/` | 同名 `.fbx`，Unity 导出版（单位/轴向与 `fbx/` 不同） | 备份，无引用 |
-| `gltf/` | `.gltf` + `.bin`（文本、可 diff） | 备份，无引用 |
-| `obj/` | `.obj` + `.mtl` | 备份，无引用 |
+| `gltf/` | `.gltf` + `.bin`（文本、可 diff） | 备份格式（仅 `scenes/dev/floor_mesh_preview.tscn` 引用了其中一张贴图） |
+
+> 原来的 `fbx_unity/`（Unity 导出版）和 `obj/`（`.obj` + `.mtl`）已确认**零引用**，已删除（可从 git 历史找回）。
 
 - 模型源文件（`.fbx/.gltf/.obj/.png/.wav`）**不要改名、不要移动**。改名/移动会改变 UID 解析链，
   必须走「编辑器里拖动」或「连同 `.import` 一起移动 + 跑一次 `--import`」。
@@ -366,10 +366,9 @@ RoomManager="*res://scripts/autoload/room_manager.gd"
 
 ## 8. 已知问题 / 待决定（本次整理**没有**执行）
 
-1. **三套重复格式可精简**：`Assets/models/` 下 `fbx_unity/`、`gltf/`、`obj/` 目前**无任何引用**，
-   只留 `fbx/`（在用）+ 一套备份即可，约可省 3.8 MB。删除前请确认没人拿它当"源文件"。
-2. **同名贴图 4 份**：`Assets/textures/` 与三份格式目录里的 `halloweenbits_texture.png` 完全重复，
-   建议只留一份并统一材质引用。
+1. **剩余重复格式**：`Assets/models/gltf/` 是仅剩的备份格式（约 1.4 MB），如不需要可再删。
+2. **同名贴图**：`Assets/textures/` 与 `fbx/`、`gltf/` 目录里的 `halloweenbits_texture.png` 完全重复，
+   建议统一引用 `Assets/textures/` 那一份。
 3. **room2 缺 `FloorPlane`**：房间1、房间3 都有 `Geometry/FloorPlane`（地板碰撞面），room2 没有，
    目前靠 GridMap 自身。若发现 room2 掉出地图，补一个即可（对齐 room3 的写法）。
 4. **`scenes/dev/` 两个场景**（`grid_map_preview`、`floor_mesh_preview`）是开发遗留，不影响运行；

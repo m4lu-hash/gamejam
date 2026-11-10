@@ -1,29 +1,29 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene format=3 uid="uid://mtsy13i6rbtf"]
 
-[ext_resource type="Script" path="res://scripts/rooms/door_leaf.gd" id="1_doorleaf"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_leaf"]
-size = Vector3(1.56, 2.26, 0.08)
+[ext_resource type="Script" uid="uid://coi0qkpuql5pd" path="res://scripts/rooms/door_leaf.gd" id="1_doorleaf"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wood"]
 albedo_color = Color(0.478431, 0.290196, 0.156863, 1)
 roughness = 0.85
 
+[sub_resource type="BoxMesh" id="BoxMesh_leaf"]
+size = Vector3(1.56, 2.26, 0.08)
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_leaf"]
 size = Vector3(1.56, 2.26, 0.08)
 
-[node name="DoorLeaf" type="Node3D"]
+[node name="DoorLeaf" type="Node3D" unique_id=1978956602]
 script = ExtResource("1_doorleaf")
 
-[node name="Hinge" type="Node3D" parent="."]
+[node name="Hinge" type="Node3D" parent="." unique_id=477661854]
 
-[node name="Leaf" type="MeshInstance3D" parent="Hinge"]
+[node name="Leaf" type="MeshInstance3D" parent="Hinge" unique_id=1536632329]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 1.18, 0)
-mesh = SubResource("BoxMesh_leaf")
 material_override = SubResource("StandardMaterial3D_wood")
+mesh = SubResource("BoxMesh_leaf")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Hinge"]
+[node name="StaticBody3D" type="StaticBody3D" parent="Hinge" unique_id=621013462]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Hinge/StaticBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hinge/StaticBody3D" unique_id=2026768006]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 1.18, 0)
 shape = SubResource("BoxShape3D_leaf")

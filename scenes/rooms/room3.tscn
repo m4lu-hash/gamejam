@@ -2,8 +2,6 @@
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_htvxh"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://shaders/level_blur.gdshader" id="2_vddjn"]
-[ext_resource type="Script" uid="uid://b1g614wcvrb8v" path="res://scripts/player/p_3d.gd" id="3_player"]
-[ext_resource type="PackedScene" uid="uid://prh35jb6tjtd" path="res://player/sophia_skin/sophia_skin.tscn" id="4_skin"]
 [ext_resource type="Script" uid="uid://26dt7oo43w68" path="res://scripts/rooms/door.gd" id="5_door"]
 [ext_resource type="PackedScene" path="res://scenes/doors/door_leaf.tscn" id="11_doorleaf"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="6_player"]
@@ -39,9 +37,6 @@ shader_parameter/blur_amount = 0.0
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_door_x"]
 size = Vector3(0.6, 2.3, 1.4)
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
-radius = 0.37646484
 
 [node name="Room3" type="Node3D" unique_id=602838772]
 

@@ -11,13 +11,13 @@ enum State { CLOSED, AUTO_OPENING, FREE, CLOSING }
 ## 最大开合角度（度）
 @export var max_swing_deg := 100.0
 ## 玩家进入多近的范围就自动开门
-@export var open_range := 2.5
+@export var open_range := 1.5
 ## 自动开门动画时长（秒）
 @export var auto_open_time := 0.5
 ## 玩家离开到多远后自动关门
 @export var auto_close_distance := 3.0
 ## 玩家走远后多久开始自动关门（秒）
-@export var auto_close_delay := 3.0
+@export var auto_close_delay := 1.0
 ## 关门弹簧刚度 / 阻尼
 @export var close_stiffness := 10.0
 @export var close_damp := 5.0
@@ -158,18 +158,6 @@ func begin_spawn_grace(seconds := 0.6) -> void:
 ## 当前开合角度（度）
 func get_angle_deg() -> float:
 	return rad_to_deg(_angle)
-
-
-## 推门方向符号（调试用）
-func get_push_sign() -> float:
-	return _push_sign
-
-
-## 门板当前世界朝向（调试/测试用）
-func get_leaf_world_dir() -> Vector3:
-	var dir := hinge.global_transform.basis.x
-	dir.y = 0.0
-	return dir.normalized()
 
 
 ## 玩家相对本门的坐标：x=沿门板方向的横向距离，z=朝房间内的纵向距离（米）

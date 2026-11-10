@@ -17,7 +17,6 @@ enum AnimState { IDLE, MOVE, JUMP, FALL }
 
 var _anim_state := -1  # 当前动画状态，-1 表示还没跟状态机同步过
 var _run_tilt := 0.0  # 跑动倾斜量（-1..1），平滑过渡后再写给皮肤
-var _intended_dir := Vector3.ZERO  # 本帧输入想走的方向（被门挡住时 velocity 会被清零，门要用它判断"在推门"）
 ## 传送后自动走一小段：方向 / 剩余时间 / 速度
 var _auto_walk_dir := Vector3.ZERO
 var _auto_walk_time := 0.0
@@ -57,11 +56,9 @@ func _physics_process(delta):
 		var move_speed: float = _auto_walk_speed if auto_walking else speed
 		velocity.x = direction.x * move_speed
 		velocity.z = direction.z * move_speed
-		_intended_dir = direction
 	else:
 		velocity.x = move_toward(velocity.x, 0, speed)
 		velocity.z = move_toward(velocity.z, 0, speed)
-		_intended_dir = Vector3.ZERO
 
 	# —— 重力 ——
 	if is_on_floor():
@@ -116,12 +113,6 @@ func _update_anim_state(wants_move: bool) -> void:
 			skin.jump()
 		AnimState.FALL:
 			skin.fall()
-
-
-## 门用来判断"玩家是否正朝门走"：被门挡住时 velocity 会被 move_and_slide 清零，
-## 但输入意图仍然是朝门的，所以单独暴露这个方向。
-func get_intended_dir() -> Vector3:
-	return _intended_dir
 
 
 ## 传送后自动朝某个方向走一小段（忽略玩家输入）
