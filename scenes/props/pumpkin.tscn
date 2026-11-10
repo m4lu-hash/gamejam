@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://75o8digfhj0"]
+
+[ext_resource type="PackedScene" uid="uid://b4j5ist5u86ps" path="res://Assets/models/fbx/pumpkin_orange.fbx" id="1_telmj"]
+[ext_resource type="PackedScene" uid="uid://drorygs6jk8m1" path="res://Assets/models/fbx/pumpkin_orange_jackolantern.fbx" id="2_6dk50"]
+[ext_resource type="PackedScene" uid="uid://b88q3ku6gq4qm" path="res://Assets/models/fbx/pumpkin_orange_small.fbx" id="3_7dyif"]
+[ext_resource type="PackedScene" uid="uid://be0d0kp5ba7cu" path="res://Assets/models/fbx/pumpkin_yellow.fbx" id="4_v2p7b"]
+[ext_resource type="PackedScene" uid="uid://krufbc1emdcq" path="res://Assets/models/fbx/pumpkin_yellow_jackolantern.fbx" id="5_rnt0f"]
+[ext_resource type="PackedScene" uid="uid://br0ora6kjmxxy" path="res://Assets/models/fbx/pumpkin_yellow_small.fbx" id="6_15p1q"]
+
+[node name="Node3D" type="Node3D" unique_id=1162414295]
+
+[node name="pumpkin_orange" parent="." unique_id=54724012 instance=ExtResource("1_telmj")]
+
+[node name="pumpkin_orange_jackolantern" parent="." unique_id=671630801 instance=ExtResource("2_6dk50")]
+
+[node name="pumpkin_orange_small" parent="." unique_id=1222982398 instance=ExtResource("3_7dyif")]
+
+[node name="pumpkin_yellow" parent="." unique_id=1241072045 instance=ExtResource("4_v2p7b")]
+
+[node name="pumpkin_yellow_jackolantern" parent="." unique_id=1125482029 instance=ExtResource("5_rnt0f")]
+
+[node name="pumpkin_yellow_small" parent="." unique_id=1366011672 instance=ExtResource("6_15p1q")]

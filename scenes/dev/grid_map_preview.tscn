@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://rbl6yp0tb4ja"]
+
+[ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_g3ny1"]
+
+[node name="Node3D" type="Node3D" unique_id=1529108832]
+
+[node name="GridMap" type="GridMap" parent="." unique_id=2059503310]
+mesh_library = ExtResource("1_g3ny1")

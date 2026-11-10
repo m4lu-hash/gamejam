@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/rooms/door_leaf.gd" id="1_doorleaf"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_leaf"]
+size = Vector3(1.6, 2.3, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wood"]
+albedo_color = Color(0.478431, 0.290196, 0.156863, 1)
+roughness = 0.85
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_leaf"]
+size = Vector3(1.6, 2.3, 0.08)
+
+[node name="DoorLeaf" type="Node3D"]
+script = ExtResource("1_doorleaf")
+
+[node name="Pivot" type="Node3D" parent="."]
+
+[node name="Leaf" type="MeshInstance3D" parent="Pivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 1.15, 0)
+mesh = SubResource("BoxMesh_leaf")
+material_override = SubResource("StandardMaterial3D_wood")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Pivot"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Pivot/StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 1.15, 0)
+shape = SubResource("BoxShape3D_leaf")
