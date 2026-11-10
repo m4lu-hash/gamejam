@@ -64,7 +64,7 @@ light_volumetric_fog_energy = 1.902
 light_size = 10.0
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=2014331729]
-transform = Transform3D(-4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0, 1, -4, 4, 0)
+transform = Transform3D(1.9106855e-15, -4.371139e-08, -1, -1, -4.371139e-08, 0, -4.371139e-08, 1, -4.371139e-08, 0, 4, -4)
 mesh = SubResource("PlaneMesh_j7v4n")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D" unique_id=2039546460]
@@ -97,7 +97,7 @@ size = Vector3(6, 0.3, 6)
 material = SubResource("FogMaterial_beyeo")
 
 [node name="doorwall" type="CSGBox3D" parent="." unique_id=767253659]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -4)
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -4, 4, 0)
 use_collision = true
 size = Vector3(8, 8, 0.1)
 
@@ -117,7 +117,7 @@ transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 4, 4
 shape = SubResource("BoxShape3D_1id8r")
 
 [node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=1418428617]
-transform = Transform3D(1.2557092, 0, 0, 0, -4.371139e-08, -1.226751, 0, 1, -5.3622987e-08, 0, 1.2470635, -4)
+transform = Transform3D(-5.488879e-08, 1, -5.3622987e-08, 0, -4.371139e-08, -1.226751, -1.2557092, -4.371139e-08, 2.3439352e-15, -4, 1.247, 0)
 material_override = SubResource("StandardMaterial3D_cv072")
 mesh = SubResource("PlaneMesh_iuj6i")
 
