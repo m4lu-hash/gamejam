@@ -25,14 +25,20 @@ func change_room(packed: PackedScene, spawn_name: String = "") -> void:
 	var old_scene := tree.current_scene
 	var old_player := _find_player(old_scene)
 
-	# 记录出发那扇门当前的开合角度（大小），换场后按"朝房间内"的方向复制过去
+	# 记录出发门的开合角度 + 玩家相对这扇门的位置（传送后要一模一样）
 	var source_angle := 0.0
 	var has_source_angle := false
+	var source_offset := Vector3.ZERO
+	var has_source_offset := false
 	if old_player != null:
 		var src_door := _nearest_door_to(old_player, old_scene)
-		if src_door != null and src_door.has_method("get_angle_deg"):
-			source_angle = absf(src_door.get_angle_deg())
-			has_source_angle = true
+		if src_door != null:
+			if src_door.has_method("get_angle_deg"):
+				source_angle = absf(src_door.get_angle_deg())
+				has_source_angle = true
+			if src_door.has_method("get_player_local_offset"):
+				source_offset = src_door.get_player_local_offset(old_player)
+				has_source_offset = true
 
 	var new_scene := packed.instantiate()
 
@@ -43,7 +49,7 @@ func change_room(packed: PackedScene, spawn_name: String = "") -> void:
 	var new_player := _find_player(new_scene)
 
 	_apply_spawn(new_player, new_scene, spawn_name)
-	_open_nearest_door(new_player, new_scene, source_angle, has_source_angle)
+	_open_nearest_door(new_player, new_scene, source_angle, has_source_angle, source_offset, has_source_offset)
 
 	# 继承原来的速度：切换后角色继续沿原方向走，手感更连贯
 	if old_player is CharacterBody3D and new_player is CharacterBody3D:
@@ -88,7 +94,7 @@ func _find_player(root: Node) -> Node3D:
 
 ## 玩家刚落到新房间时，把离他最近的那扇门立刻打开（"像上个场景一样是被推开的"）；
 ## 之后门自己会在玩家走远时自动关上。
-func _open_nearest_door(player: Node3D, scene: Node, source_angle := 0.0, has_source_angle := false) -> void:
+func _open_nearest_door(player: Node3D, scene: Node, source_angle := 0.0, has_source_angle := false, source_offset := Vector3.ZERO, has_source_offset := false) -> void:
 	if player == null:
 		return
 
@@ -100,10 +106,17 @@ func _open_nearest_door(player: Node3D, scene: Node, source_angle := 0.0, has_so
 	var angle := 100.0
 	if has_source_angle and source_angle >= 20.0:
 		angle = source_angle
-	if nearest.has_method("open_with_animation"):
-		nearest.open_with_animation(angle)
+
+	# 瞬间就是那个角度，不播动画
+	if nearest.has_method("open_at_angle"):
+		nearest.open_at_angle(angle)
 	elif nearest.has_method("open_instant"):
 		nearest.open_instant()
+
+	# 用旧场景里"玩家相对门的位置"来摆放新玩家：距离/方位保持一致
+	if has_source_offset and nearest.has_method("place_player_from_offset"):
+		var pos: Vector3 = nearest.place_player_from_offset(source_offset)
+		player.global_position = pos
 
 
 func _nearest_door_to(target: Node3D, root: Node = null) -> Node3D:

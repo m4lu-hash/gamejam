@@ -42,6 +42,7 @@ var _auto_t := 0.0
 var _away_time := 0.0
 var _push_sign := 1.0     # 推开时角度方向
 var _inward_sign := -1.0  # 朝房间内时角度方向
+var _has_auto_opened := false  # 第一次开门是否已经播过动画
 var _closed_leaf_dir := Vector3.FORWARD
 var _last_player_pos := Vector3.ZERO
 var _has_last_pos := false
@@ -70,9 +71,15 @@ func _physics_process(delta: float) -> void:
 
 	match _state:
 		State.CLOSED:
-			# 关着的门：玩家一推就进入物理状态
+			# 关着的门被推：
+			#   第一次 -> 播放"自动推开"动画（第一次开门看动画）
+			#   之后   -> 直接进物理状态，由玩家推
 			if pushing:
-				_state = State.FREE
+				if not _has_auto_opened:
+					_has_auto_opened = true
+					open_with_animation(max_swing_deg, false)
+				else:
+					_state = State.FREE
 		State.AUTO_OPENING:
 			_auto_t += delta
 			var k := clampf(_auto_t / maxf(auto_open_time, 0.01), 0.0, 1.0)
@@ -115,11 +122,25 @@ func _physics_process(delta: float) -> void:
 	is_open = absf(_angle) > deg_to_rad(8.0)
 
 
-## 传送进房间时调用：播放"自动推开"动画，随后进入可被玩家推的物理状态
-func open_with_animation(angle_deg_arg: float = 100.0) -> void:
+## 传送进房间时调用：瞬间设为指定角度（不播动画），随后进入可被玩家推的物理状态
+func open_at_angle(angle_deg_arg: float) -> void:
+	var mag := clampf(absf(angle_deg_arg), 0.0, max_swing_deg)
+	_angle = _inward_sign * deg_to_rad(mag)
+	_ang_vel = 0.0
+	_auto_t = 0.0
+	_away_time = 0.0
+	hinge.rotation.y = _angle
+	is_open = mag > 8.0
+	_state = State.FREE if mag > 2.0 else State.CLOSED
+
+
+## 播放"自动推开"动画，随后进入可被玩家推的物理状态
+## inward=true 朝房间内开（传送到达用），false 朝房间外开（玩家推门用）
+func open_with_animation(angle_deg_arg: float = 100.0, inward := true) -> void:
 	var mag := clampf(absf(angle_deg_arg), 5.0, max_swing_deg)
+	var sign_dir := _inward_sign if inward else _push_sign
 	_auto_from = _angle
-	_auto_to = _inward_sign * deg_to_rad(mag)
+	_auto_to = sign_dir * deg_to_rad(mag)
 	_auto_t = 0.0
 	_ang_vel = 0.0
 	_away_time = 0.0
@@ -129,7 +150,23 @@ func open_with_animation(angle_deg_arg: float = 100.0) -> void:
 
 ## 兜底：直接开（没有来源角度时）
 func open_instant() -> void:
-	open_with_animation(max_swing_deg)
+	open_at_angle(max_swing_deg)
+
+
+## 玩家相对本门的坐标：x=沿门板方向的横向距离，z=朝房间内的纵向距离（米）
+func get_player_local_offset(player: Node3D) -> Vector3:
+	var offset: Vector3 = player.global_position - global_position
+	offset.y = 0.0
+	var lateral := offset.dot(_closed_leaf_dir)
+	var inward := offset.dot(-_outward_dir())
+	return Vector3(lateral, player.global_position.y - global_position.y, inward)
+
+
+## 把"相对门的坐标"换算成本门坐标系下的世界位置
+func place_player_from_offset(offset: Vector3) -> Vector3:
+	var lateral: Vector3 = _closed_leaf_dir * offset.x
+	var inward: Vector3 = (-_outward_dir()) * offset.z
+	return global_position + lateral + inward + Vector3.UP * offset.y
 
 
 ## 当前开合角度（度）
@@ -144,27 +181,21 @@ func get_leaf_world_dir() -> Vector3:
 	return dir.normalized()
 
 
-## 玩家是否在朝门走（并更新上一帧位置）
+## 玩家是否在朝门走：优先用玩家的输入意图方向（被门挡住时 velocity/位移都是 0）
 func _is_pushing(player: Node3D, _delta: float) -> bool:
-	var pos := player.global_position
-	var move := pos - _last_player_pos
-	_last_player_pos = pos
-	if not _has_last_pos:
-		_has_last_pos = true
-		return false
-
-	move.y = 0.0
-	if move.length() > 1.0:
-		return false  # 传送/复位造成的位移，不算推门
-	if move.length() < 0.002:
+	var dir := Vector3.ZERO
+	if player.has_method("get_intended_dir"):
+		dir = player.get_intended_dir()
+	dir.y = 0.0
+	if dir.length() < 0.01:
 		return false
 
 	var leaf_center: Vector3 = hinge.global_transform * Vector3(0.8, 0.0, 0.0)
-	var to_leaf: Vector3 = leaf_center - pos
+	var to_leaf: Vector3 = leaf_center - player.global_position
 	to_leaf.y = 0.0
 	if to_leaf.length() > push_range or to_leaf.length() < 0.001:
 		return false
-	return move.normalized().dot(to_leaf.normalized()) >= 0.3
+	return dir.normalized().dot(to_leaf.normalized()) >= 0.3
 
 
 func _update_away_time(player: Node3D, delta: float) -> void:
