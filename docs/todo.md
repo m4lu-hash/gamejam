@@ -353,7 +353,7 @@ docs/Project.md              # 新系统说明
 
 | 步骤 | 物件（实际模型） | 交互 | 产出 |
 | --- | --- | --- | --- |
-| 1 | 台灯 `circular_desklamp.glb`（放书桌上） | 按 E 检视 → 360° 转到灯底 | 底部文字：「灯座刻着 3-1-4」 |
+| 1 | 台灯 `circular_desklamp.glb`（**独立模型，摆在书桌 `desk1_alt2_weathered` 上**，书桌本身不含灯） | 按 E 检视 → 360° 转到灯底 | 底部文字：「灯座刻着 3-1-4」 |
 | 2 | 纸条 `paper_single_sheet.glb`（桌上/地上） | 按 E 拾取 | 背包出现「皱巴巴的纸条」 |
 | 3 | 背包 | 选纸条 → 「使用」→ 二次确认 | 打开检视：纸条内容「文件柜密码 3-1-4」 |
 | 4 | 文件柜 `file_cabinet_small.glb` | 按 E → 需要「纸条」→ 使用后模型换成 `file_cabinet_small_open.glb` | 得到「锈钥匙」（占位模型：暂用 `pen.glb` 或 `paper_stack`，后续可换） |
@@ -374,3 +374,68 @@ docs/Project.md              # 新系统说明
 | 4 | 检视允许**任意角度**（含背面/底面） |
 | 5 | 合成旁白默认**中性音色** |
 | 6 | 第一个谜题按 §13 执行（台灯 → 纸条 → 文件柜 → 锈钥匙） |
+
+
+---
+
+## 15. 容器 / 藏物互动（"东西里面藏着东西，拿出来进背包"）
+
+**结论：能做，而且不需要新造一套系统**——在现有 `interactable.gd` 上加"容器"类型即可。
+
+### 15.1 素材核实结果（实测，不是估计）
+
+| 素材 | 是否存在 | 网格/尺寸 |
+| --- | --- | --- |
+| `desk1_alt2_weathered.glb` | ✅ | 单网格 `desk1_alt2_weathered`，2.39 × 0.89 × 1.48m —— **只是桌子，没有灯** |
+| `circular_desklamp.glb` | ✅ | 0.20 × 0.38 × 0.36m，独立台灯 |
+| `square_desklamp.glb` | ✅ | 0.20 × 0.35 × 0.32m，独立台灯（方形） |
+| `paper_single_sheet.glb` | ✅ | 0.34 × 0.28 × 0.32m，单张纸条 |
+| `file_cabinet_small.glb` | ✅ | 0.48 × 1.41 × 0.52m，关闭状态 |
+| `file_cabinet_small_open.glb` | ✅ | 同尺寸，**打开状态**（可直接换模型） |
+
+> 结论：**书桌本身没有台灯**，台灯要单独摆到桌面上；纸条和文件柜（关/开两版）都真实存在，可以支撑"藏东西"玩法。
+
+### 15.2 设计：`ContainerInteractable`
+
+在 `interactable.gd` 基础上扩展（或新建 `container_interactable.gd`）：
+
+| 字段 | 作用 |
+| --- | --- |
+| `loot_items: Array[ItemData]` | 容器里藏的物品（可多个） |
+| `requires_item: ItemData` | 开门条件（可空 = 直接能开） |
+| `consume_required: bool` | 开锁是否消耗钥匙 |
+| `open_scene: PackedScene` | 打开后替换的模型（如 `file_cabinet_small_open.glb`） |
+| `loot_preview_scene: PackedScene` | 打开后放在里面的"东西"模型（可空） |
+| `open_dialogue_id` | 打开时播的对话（可空） |
+| `once: bool` | 只能拿一次（默认 true） |
+
+**流程**：
+
+```
+玩家走近容器 → 提示「按 E 打开」（有锁时显示「需要 xxx」）
+        ↓ 按 E
+条件不满足 → 红色提示「还缺东西」/ 播失败台词
+条件满足   → 播放开箱动画/音效
+           → 模型替换成 open_scene（视觉上"打开了"）
+           → loot_items 逐个加入 Inventory（屏幕提示「获得：xxx」）
+           → 消耗 requires_item（可选）
+           → 设 flag、播对话、关闭互动（once）
+```
+
+### 15.3 两种"点击取出"的表现形式
+
+1. **直接开箱拿**：按 E 打开容器后，物品**自动**进背包（最简单，推荐先做这个）；
+2. **看得见再拿**：打开后容器里真的摆一个 3D 物品（`loot_preview_scene`），玩家再按 E 对准物品**单独拿取**——更有"伸手去拿"的感觉，多一步交互。
+
+> 目前游戏内交互统一是 **E 键**（不是鼠标点击）。如果你想改成"鼠标左键点击物体"，需要在相机前加 RayCast3D 做点选，我可以加，但会和现有 E 交互并存，建议保持一致用 E。
+
+### 15.4 示例：文件柜里藏钥匙
+
+```
+FileCabinet (StaticBody + Area3D container)
+  loot_items           = [锈钥匙 ItemData]
+  requires_item        = 纸条 ItemData
+  open_scene           = file_cabinet_small_open.glb
+  loot_preview_scene   = （可空，或放一个小模型在柜子里）
+```
+玩家：拾取纸条 → 背包里"使用"纸条（二次确认）→ 走到文件柜按 E → 柜子变成打开模型 → 获得锈钥匙。
