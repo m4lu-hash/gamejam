@@ -238,11 +238,12 @@ InspectView (CanvasLayer, layer=85, process_mode=ALWAYS)
 | 2 | 点「开始游戏」 | 菜单消失；黑屏 0.5s；旁白（合成音）：「我们搭了个恐怖屋，来整蛊你的」 |
 | 3 | 旁白结束 | HUD 提示「WASD 移动」→ 玩家走到房间中央（`Area3D` 检测到）后进入下一步 |
 | 4 | 到达中央 | 提示「空格跳跃」；跳一次后继续 |
-| 5 | 提示「E 互动」 | 桌上放一个可检视的「台灯」；按 E 打开检视 |
-| 6 | 检视台灯 | 屏幕蒙版 + 360° 旋转；底部文字提示灯底有刻痕（第一个线索） |
-| 7 | 关闭检视 | 提示「I 打开背包」，展示刚检视的物品 |
-| 8 | 背包使用 | 用「灯座钥匙」开书桌抽屉 → 得到第一件关键道具 → 旁白「看来你还不算太笨」 |
-| 9 | 结束 | 设置 `tutorial_seen = true`，HUD 目标变成「找到逃出去的办法」 |
+| 5 | 提示「E 互动」 | 书桌上的台灯（`circular_desklamp.glb`）按 E 打开检视 |
+| 6 | 检视台灯 | 蒙版 + 360° 旋转；底部文字点出灯座有刻痕（数字「3-1-4」） |
+| 7 | 关闭检视 | 提示「I 打开背包」；桌上纸条（`paper_single_sheet.glb`）可拾取 |
+| 8 | 背包使用 | 选中纸条点「使用」→ 二次确认 → 打开检视看到「文件柜密码 3-1-4」 |
+| 9 | 文件柜 | 用纸条开文件柜（`file_cabinet_small.glb` → `file_cabinet_small_open.glb`），得到「锈钥匙」 |
+| 10 | 结束 | 设置 `tutorial_seen = true`，HUD 目标变成「找到逃出去的办法」 |
 
 - 引导用 `TutorialManager`（`scripts/autoload/tutorial_manager.gd`）按步骤推进，每步监听 flag/Area3D/信号，避免写死时间。
 - HUD：右上角目标文字 + 底部临时提示（2s 淡出）。
@@ -306,3 +307,70 @@ docs/Project.md              # 新系统说明
 4. 检视时是否允许旋转到任意角度（包括看到背面/底面）——我默认允许；
 5. 合成旁白的性别/音高偏好（默认偏中性、低频）；
 6. 第一个谜题的具体设计（暂定：检视台灯 → 得到钥匙 → 开抽屉），你有别的想法可以直接改。
+
+---
+
+## 12. 可用素材清单（据项目实际资源盘点）
+
+### 12.1 恐怖/氛围（`Assets/models/fbx/`，fbx 已导入）
+| 素材 | 可用途 |
+| --- | --- |
+| `candle` / `candle_melted` / `candle_thin` / `candle_triple` / `skull_candle` | 房间恐怖氛围、祭坛（`shrine_candles`） |
+| `lantern_hanging` / `lantern_standing` / `post_lantern` | 走廊/房间光源 |
+| `skull` / `bone_A/B/C` / `ribcage` | 线索物、装饰、仪式感 |
+| `coffin` / `coffin_decorated` / `crypt` | 房间里的「大物件」、可当谜题目标 |
+| `grave_A/B` / `gravestone` / `gravemarker_A/B` | 室外/房间角落 |
+| `pumpkin_*_jackolantern` | 已有点亮效果，适合当氛围灯 |
+| `tree_dead_*` / `fence_*` / `arch` / `pillar` | 走廊尽头、院子场景 |
+
+### 12.2 办公/家具（`OFFICE/OFFICE/`，glb）
+| 分类 | 可用模型 | 用途 |
+| --- | --- | --- |
+| `extras` | **`circular_desklamp` / `square_desklamp`**（台灯）、`desk_phone`、`wall_clock`、`whiteboard`、`coffee_machine`、`water_cooler`、`mug`、`glass` | 台灯=检视谜题；电话/时钟=线索物 |
+| `stationary` | **`paper_single_sheet` / `paper_stack`**（纸条）、`pen` | 纸条=可拾取/可检视的道具 |
+| `file_cabinets` | `file_cabinet_small` / `_small_open` / `_larger` / `_larger_open` / `_smallest` …（都有开/关两种） | 文件柜=「上锁—开启」的视觉切换 |
+| `desks` | `desk1` 系列（含 weathered 做旧版）、会议桌 | 书桌/工作台 |
+| `chairs` / `couches` | `office_chair_*`、`couch_*`、`armchair_*`、`beanbag_*` | 沙发/座椅 |
+| `computers` | `computer_monitor`、`TV`、`computer_tower`、`keyboard` | 电视谜题、监控感 |
+| `book_things` | `books`、`books_alt`、`book_case` 系列 | 书架、埋在书里的线索 |
+| `carpet_floor` | `floor_2x2` 等 | 局部地毯装饰 |
+
+### 12.3 PSX 家具（`PSX-Derelict-Furniture-Standard/glb/`）
+`chair` / `couch` / `fridge` / `mattress` / `shelf` / `vase` —— 冰箱已加碰撞；床垫、货架、花瓶可继续用作线索点。
+
+### 12.4 城市户外（`URBAN/`，glb）——**留给结局/逃出后的场景**
+建筑部件、预拼建筑、公交站、路障锥、垃圾桶、围栏、管道、道路、红绿灯、通风口。
+> 适合做「逃出房间后走到街上」的收尾场景，本轮 P0 不用。
+
+### 12.5 角色
+`player/sophia_skin`：模型 + 动画状态机（Idle/Move/Jump/Fall/EdgeGrab/WallSlide）+ 脚步声。
+
+---
+
+## 13. 第一个谜题（按实际素材细化）
+
+**场景**：room1 的书桌区（已有 `desk1_alt2_weathered`、`fridge`、`armchair_red`、`TV`）。
+
+| 步骤 | 物件（实际模型） | 交互 | 产出 |
+| --- | --- | --- | --- |
+| 1 | 台灯 `circular_desklamp.glb`（放书桌上） | 按 E 检视 → 360° 转到灯底 | 底部文字：「灯座刻着 3-1-4」 |
+| 2 | 纸条 `paper_single_sheet.glb`（桌上/地上） | 按 E 拾取 | 背包出现「皱巴巴的纸条」 |
+| 3 | 背包 | 选纸条 → 「使用」→ 二次确认 | 打开检视：纸条内容「文件柜密码 3-1-4」 |
+| 4 | 文件柜 `file_cabinet_small.glb` | 按 E → 需要「纸条」→ 使用后模型换成 `file_cabinet_small_open.glb` | 得到「锈钥匙」（占位模型：暂用 `pen.glb` 或 `paper_stack`，后续可换） |
+| 5 | 走廊尽头的门 | 需要「锈钥匙」 | 解锁 → 进入下一阶段 |
+
+- 椅子、冰箱、床垫、电视保留现有互动（电视灯光 E 开关）。
+- 「锈钥匙」只是占位：如果你们后面找到/做一个钥匙模型，直接替换 `ItemData.model_scene` 即可，不影响逻辑。
+
+---
+
+## 14. 已确认的设计决定（对应 §11）
+
+| # | 决定 |
+| --- | --- |
+| 1 | 主菜单标题、按钮文案**先用临时名字**，后续你自己改 |
+| 2 | 点「开始游戏」**不做黑屏过渡**，点完立刻可操作 |
+| 3 | 背包「使用」**需要二次确认**（弹确认按钮/再次点击确认） |
+| 4 | 检视允许**任意角度**（含背面/底面） |
+| 5 | 合成旁白默认**中性音色** |
+| 6 | 第一个谜题按 §13 执行（台灯 → 纸条 → 文件柜 → 锈钥匙） |
