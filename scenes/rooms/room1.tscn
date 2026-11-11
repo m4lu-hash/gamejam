@@ -21,7 +21,7 @@
 [ext_resource type="PackedScene" uid="uid://cahmy4x0ccp3e" path="res://OFFICE/OFFICE/file_cabinets/file_cabinet_small_open.glb" id="18_cabinet_open"]
 [ext_resource type="Resource" path="res://data/items/desk_lamp.tres" id="19_lamp_item"]
 [ext_resource type="Resource" path="res://data/items/paper.tres" id="20_paper_item"]
-[ext_resource type="Resource" path="res://data/items/rusty_key.tres" id="21_key_item"]
+[ext_resource type="Resource" uid="uid://bhkoaxcb4s2lm" path="res://data/items/rusty_key.tres" id="21_key_item"]
 
 [sub_resource type="Environment" id="Environment_vkqoe"]
 ambient_light_source = 2
@@ -79,7 +79,6 @@ environment = SubResource("Environment_vkqoe")
 
 [node name="KeyLight" type="OmniLight3D" parent="Environment" unique_id=884022658]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.049096584, 3.2066557, -0.02704525)
-visible = false
 light_color = Color(0.78153324, 0.8302539, 0.99999875, 1)
 light_energy = 0.734
 light_indirect_energy = 1.039

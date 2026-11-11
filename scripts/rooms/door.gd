@@ -47,11 +47,22 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if _door == null or not _door.has_method("is_locked") or not bool(_door.call("is_locked")):
 		return
+	# 触发区在门框外侧，玩家在房间内侧按 E 时并不重叠，所以按距离判定
+	if _player_near_door(2.5):
+		_try_unlock()
+		get_viewport().set_input_as_handled()
+
+
+func _player_near_door(radius: float) -> bool:
+	var scene := get_tree().current_scene
+	if scene != null:
+		var p := scene.get_node_or_null("player") as Node3D
+		if p != null:
+			return p.global_position.distance_to(_door.global_position) <= radius
 	for body in get_overlapping_bodies():
 		if _is_player(body):
-			_try_unlock()
-			get_viewport().set_input_as_handled()
-			return
+			return true
+	return false
 
 
 func _try_unlock() -> void:
