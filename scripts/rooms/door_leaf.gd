@@ -26,6 +26,16 @@ enum State { CLOSED, AUTO_OPENING, FREE, CLOSING }
 ## 是否一开局就处于打开状态
 @export var open_on_start := false
 
+@export_group("锁")
+## 是否锁着（锁着时不会自动开，必须用钥匙开锁）
+@export var locked := false
+## 锁的编号：钥匙的 unlock_ids 里包含它才能开
+@export var lock_id: StringName = &""
+## 没钥匙时的提示里显示的钥匙名（仅用于文案）
+@export var key_hint := "钥匙"
+## 开锁时播的对话（可空）
+@export var unlock_dialogue_id: StringName = &""
+
 ## 门是否处于打开状态（角度超过阈值）
 var is_open := false
 
@@ -66,8 +76,8 @@ func _physics_process(delta: float) -> void:
 
 	match _state:
 		State.CLOSED:
-			# 靠近自动开门（朝房间外开，不会朝玩家扑）
-			if not ignoring and player != null and dist <= open_range:
+			# 靠近自动开门（朝房间外开，不会朝玩家扑）；锁着时不开
+			if not ignoring and not locked and player != null and dist <= open_range:
 				open_with_animation(max_swing_deg, false)
 		State.AUTO_OPENING:
 			_auto_t += delta
@@ -159,6 +169,25 @@ func begin_spawn_grace(seconds := 0.6) -> void:
 ## 当前开合角度（度）
 func get_angle_deg() -> float:
 	return rad_to_deg(_angle)
+
+
+## 是否锁着
+func is_locked() -> bool:
+	return locked
+
+
+## 尝试用一把钥匙开锁；成功返回 true 并解除锁定
+func try_unlock(key: ItemData) -> bool:
+	if not locked:
+		return true
+	if key == null or not (key is KeyData):
+		return false
+	if not (key as KeyData).can_unlock(lock_id):
+		return false
+	locked = false
+	if unlock_dialogue_id != &"":
+		UIManager.show_dialogue(unlock_dialogue_id)
+	return true
 
 
 ## 玩家相对本门的坐标：x=沿门板方向的横向距离，z=朝房间内的纵向距离（米）

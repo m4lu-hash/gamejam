@@ -3,8 +3,10 @@ class_name  Door
 ## 门洞触发器：玩家朝门外走进去，就无缝切换到目标房间，
 ## 并出现在目标房间对应的门口出生点上。
 ##
-## 摆放方式：Area3D 放在门洞（CSGBox3D 挖出来的开口）位置，
-## 用一个 BoxShape3D 把门洞盖住即可；Area3D 本身不用旋转。
+## 如果最近的那扇门是锁着的（door_leaf.locked = true）：
+##   - 玩家走不过去（_can_pass 返回 false）；
+##   - 站在门口按 E 会尝试用背包里的钥匙开锁；
+##   - 开锁成功后门才会自动打开。
 
 ## 目标房间场景（进入本房间时预加载，切换瞬间不卡顿）
 @export_file("*.tscn") var target_scene: String = ""
@@ -16,17 +18,16 @@ class_name  Door
 @export_range(-1.0, 1.0, 0.05) var direction_tolerance := 0.2
 
 var _packed: PackedScene
-## 离本触发器最近的那扇门（用来判断"门开够没有"）
+## 离本触发器最近的那扇门（用来判断"门开够没有"和"锁没锁"）
 var _door: Node3D
 
 
 func _ready() -> void:
-	if target_scene.is_empty():
-		return
-	_packed = load(target_scene)
-	if _packed == null:
-		push_error("Door: 目标场景加载失败：%s" % target_scene)
-	# 找本房间离门口最近的门（用于"门开够没有"的判断）
+	if not target_scene.is_empty():
+		_packed = load(target_scene)
+		if _packed == null:
+			push_error("Door: 目标场景加载失败：%s" % target_scene)
+	# 找本房间离门口最近的门（用于"门开够没有 / 是否锁着"的判断）
 	_find_nearby_door.call_deferred()
 
 
@@ -38,6 +39,29 @@ func _process(_delta: float) -> void:
 		if _is_player(body) and _can_pass(body):
 			RoomManager.change_room(_packed, target_spawn)
 			return
+
+
+## 锁着的门：按 E 尝试用背包里的钥匙开锁
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("interact"):
+		return
+	if _door == null or not _door.has_method("is_locked") or not bool(_door.call("is_locked")):
+		return
+	for body in get_overlapping_bodies():
+		if _is_player(body):
+			_try_unlock()
+			get_viewport().set_input_as_handled()
+			return
+
+
+func _try_unlock() -> void:
+	for item in Inventory.items:
+		if item is KeyData and (item as KeyData).can_unlock(_door.get("lock_id")):
+			if bool(_door.call("try_unlock", item)):
+				UIManager.toast("锁开了：%s" % item.display_name)
+				GameState.set_flag(StringName("unlocked_" + String(_door.get("lock_id"))), true)
+				return
+	UIManager.toast("需要：%s" % String(_door.get("key_hint")))
 
 
 func _find_nearby_door() -> void:
@@ -55,6 +79,8 @@ func _find_nearby_door() -> void:
 func _can_pass(body: Node3D) -> bool:
 	# 刚换完房间的一小段时间内不响应，避免两个门口来回弹
 	if Time.get_ticks_msec() - RoomManager.last_change_msec < RoomManager.ENTER_GRACE_MSEC:
+		return false
+	if _door != null and _door.has_method("is_locked") and bool(_door.call("is_locked")):
 		return false
 	# 门没开到能过人的程度就不放行（防止从半开的门缝里被"挤"出去切换）
 	if _door != null and _door.has_method("get_angle_deg"):

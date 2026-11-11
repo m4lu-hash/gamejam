@@ -1,13 +1,14 @@
-[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="KeyData" load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/data/key_data.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://OFFICE/OFFICE/stationary/pen.glb" id="2_model"]
 
 [resource]
 script = ExtResource("1_script")
 id = &"rusty_key"
 display_name = "锈钥匙"
-description = "一把锈迹斑斑的钥匙，似乎能打开走廊尽头那扇门。"
+description = "一把锈迹斑斑的钥匙，能打开走廊尽头那扇锁着的门。"
 model_scene = ExtResource("2_model")
 inspect_scale = 4.0
 can_use = true
+unlock_ids = Array[StringName]([&"exit_door"])
