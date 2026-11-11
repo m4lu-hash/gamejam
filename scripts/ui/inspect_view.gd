@@ -30,6 +30,7 @@ var _dragging: bool = false
 var _has_model: bool = false
 ## 当前模型包围球半径，用于相机自适应与窗口缩放
 var _fit_radius: float = 1.0
+var _paused_by_me := false
 
 @onready var _viewport_container: SubViewportContainer = $ViewportContainer
 @onready var _sub_viewport: SubViewport = $ViewportContainer/SubViewport
@@ -74,7 +75,9 @@ func open(item: ItemData) -> void:
 	_apply_zoom()
 	_viewport_container.visible = _has_model
 	visible = true
-	get_tree().paused = true
+	if not get_tree().paused:
+		get_tree().paused = true
+		_paused_by_me = true
 
 
 ## 关闭检视：清空模型、取消暂停并发出 closed。
@@ -87,7 +90,9 @@ func close() -> void:
 	_desc_label.text = ""
 	_viewport_container.visible = false
 	visible = false
-	get_tree().paused = false
+	if _paused_by_me:
+		_paused_by_me = false
+		get_tree().paused = false
 	closed.emit()
 
 

@@ -19,6 +19,7 @@ var _hovered_index := -1
 var _confirming := false
 var _confirm_item: ItemData = null
 var _warning_serial := 0
+var _paused_by_me := false
 
 var _item_list: ItemList
 var _empty_label: Label
@@ -67,7 +68,9 @@ func open() -> void:
 	_clear_warning()
 	_refresh_list()
 	_reset_confirm()
-	get_tree().paused = true
+	if not get_tree().paused:
+		get_tree().paused = true
+		_paused_by_me = true
 	if _item_list != null and _item_list.item_count > 0:
 		_item_list.grab_focus()
 
@@ -85,7 +88,9 @@ func close() -> void:
 	visible = false
 	if _item_list != null:
 		_item_list.release_focus()
-	get_tree().paused = false
+	if _paused_by_me:
+		_paused_by_me = false
+		get_tree().paused = false
 
 
 ## 供 UIManager / 快捷键调用

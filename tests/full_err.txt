@@ -1,0 +1,20 @@
+ERROR: Failed to open 'user://logs/godot2026-11-11T11.11.43.log'.
+   at: copy (core/io/dir_access.cpp:429)
+ERROR: Failed to open log file for writing: user://logs/godot.log
+   at: rotate_file (core/io/logger.cpp:169)
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+ERROR: Playback can only happen when a node is inside the scene tree
+   at: play_basic (scene/audio/audio_stream_player_internal.cpp:145)
+   GDScript backtrace (most recent call first):
+       [0] speak (res://scripts/audio/voice_synth.gd:103)
+       [1] _initialize (res://tests/tmp_voice_test.gd:83)
+  [FAIL] speak 后应处于播放状态
+ERROR: Playback can only happen when a node is inside the scene tree
+   at: play_basic (scene/audio/audio_stream_player_internal.cpp:145)
+   GDScript backtrace (most recent call first):
+       [0] speak (res://scripts/audio/voice_synth.gd:103)
+       [1] _initialize (res://tests/tmp_voice_test.gd:98)
+  [FAIL] 取消静音后应能继续播
+
+失败 2 项
