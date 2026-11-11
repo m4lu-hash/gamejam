@@ -1,172 +1,255 @@
-# GameJam 后续开发 TODO（待审核）
+# GameJam 开发 TODO（v2 · 待审核）
 
-> 依据 2026-11-11 群聊整理：背包系统、对话系统、物品展示（360° 检视）、恐怖逃脱剧情 + 解谜、主菜单、新手教程（开场旁白）。
-> **本文档只是方案，等你审核通过后再动代码。**
+> 依据 2026-11-11 追加的口头需求重写。**本文档只描述方案，不写代码**；确认后再按 §6 顺序实现。
+> 上一版（背包/对话/检视/剧情/主菜单的通用规划）已并入本文，范围收敛为下面 7 个 P0 功能。
 
 ---
 
-## 0. 一句话目标
+## 0. 本轮要做的 7 件事（P0）
 
-玩家被困在三个房间 + 走廊组成的恐怖场景里，通过**拾取物品 → 背包查看 → 检视线索 → 对话/旁白推进 → 解谜**逃出去；主菜单进入，开场有画外音教学。
+1. **开始界面（覆盖在游戏场景上）**：和游戏同一个场景、同一个摄像机，只叠一层 UI；菜单期间玩家完全不能操作；点「开始游戏」立刻能玩；「退出游戏」退出。
+2. **对话系统**：旁白 + 角色对话，逐字显示、可跳过、可推进。
+3. **交互系统**：走到物件旁显示「按 E …」，支持 检视 / 对话 / 使用。
+4. **背包（列表式）**：左右分栏，左边物品列表、右边信息 + 图片 + 使用 / 警示。
+5. **检视系统**：按 E 检视 → 屏幕蒙版 → 3D 物品居中 → 鼠标 360° 旋转 → 底部文字说明。
+6. **噪声旁白**：不用录音，用噪声图样 + 逐字哈希生成「嘟嘟囔囔」的合成语音。
+7. **新手教程 + 第一个小谜题**：用对话把「我们搭了个恐怖场景来整蛊你」讲清楚，引导玩家走完 WASD / 空格 / E / 背包 / 检视，并解开第一个谜题。
 
-## 1. 当前工程基础（已具备，直接复用）
+其余（存档、结局分支、更多谜题、设置菜单、惊吓事件）**本轮不做**，见 §7。
 
-| 已有 | 说明 |
+---
+
+## 1. 现状（可直接复用）
+
+| 已有 | 用途 |
 | --- | --- |
-| `RoomManager`（autoload） | 同帧换场景、继承速度、出生点、门角度/位置复制 |
-| 房间 1/2/3 + `corridor-1` | 走廊是 hub，每间一个门；门为靠近自动开、走远自动关 |
-| `interactable.gd` | 通用互动区：显示提示、按 E 触发（可开关灯、把人移到坐下点） |
+| `RoomManager`（autoload） | 换场景、出生点、门角度/位置复制 |
+| `room1/2/3` + `corridor-1` | 三个房间 + 走廊 hub，每间一个门 |
 | `player.tscn` + `p_3d.gd` | 移动/跳跃/动画/传送后自动走一段 |
-| `Project.md` | 目录与命名规范 |
-
-新增系统都按现有规范放置：`scripts/autoload`、`scripts/ui`、`scripts/world`、`scenes/ui`、`data/`。
+| `interactable.gd` | Area3D 互动区：显示 Label3D 提示、按 E 开关灯或移到坐下点 |
+| `Project.md` | 目录/命名规范 |
 
 ---
 
-## 2. 系统设计总览
+## 2. 主菜单（覆盖在游戏场景上）
 
-```
-┌─────────────┐   add/remove    ┌──────────────┐
-│ PickupItem  │ ──────────────> │  Inventory   │──> 背包 UI ──> 检视（360°）
-└─────────────┘                 │  (autoload)  │
-                                └──────────────┘
-┌─────────────┐   set/check     ┌──────────────┐
-│ Dialogue    │ ──────────────> │  GameState   │<── 谜题/门/对话条件
-│ Trigger     │                 │  (flags)     │
-└─────────────┘                 └──────────────┘
-        │
-        └──> 对话 UI（打字机 + 选项 + 旁白音频）
-```
+### 2.1 需求还原
+- 不要单独的主菜单场景跳转：**菜单就是 room1 场景上的一层 UI**，背后能看到房间和摄像机画面（同一个 `mainCamera3D`）。
+- 菜单期间：玩家不能移动/跳跃/交互，门不响应。
+- 点「开始游戏」→ 菜单消失，**立刻**可以操作。
+- 点「退出游戏」→ 退出进程。
 
-### 2.1 数据层
+### 2.2 实现方式
+- 新建 `scenes/ui/main_menu.tscn`（根节点 `CanvasLayer`），直接**拖进 `scenes/rooms/room1.tscn`**（名字 `MainMenu`）。
+- 结构：
+  ```
+  MainMenu (CanvasLayer, layer=100, process_mode=ALWAYS, script=main_menu.gd)
+  ├─ Dim (ColorRect, 0,0,0,0.55, 全屏)
+  ├─ Title (Label: 「被困」/项目名)
+  ├─ Buttons (VBoxContainer)
+  │   ├─ StartButton (Button「开始游戏」)
+  │   └─ QuitButton  (Button「退出游戏」)
+  └─ Hint (Label: 「v0.1 · GameJam」)
+  ```
+- 脚本要点：
+  - `_ready()`：`get_tree().paused = true`；自己 `process_mode = ALWAYS`（保证按钮可点）；
+  - 「开始游戏」：`get_tree().paused = false`；`queue_free()` 自己；调 `Tutorial.start()` 播开场旁白；
+  - 「退出游戏」：`get_tree().quit()`。
+- 用 `paused` 的代价：雾/灯光动画也会停（菜单是静态画面，可接受）；如果你想背后场景继续动，改成「只禁用 player 的 `_physics_process` + 所有 Area3D 的 `monitoring=false`」，实现更麻烦，**默认用暂停**。
 
-**`ItemData`（自定义 Resource，`scripts/data/item_data.gd`）**
+### 2.3 验收
+- 启动游戏 → 直接看到 room1 的画面 + 菜单，玩家按键无效；
+- 点开始 → 菜单消失、能立刻走动；
+- 点退出 → 进程退出；
+- 菜单期间摄像机就是游戏里的 `mainCamera3D`，没有额外相机。
 
-| 字段 | 类型 | 用途 |
-| --- | --- | --- |
-| `id` | StringName | 唯一标识（存档、条件判断用） |
-| `display_name` | String | 背包里显示的名字 |
-| `description` | String | 详情 / 检视时的说明文字 |
-| `icon` | Texture2D | 背包格子图标 |
-| `model_scene` | PackedScene | 检视时用的 3D 模型（可空 → 不显示检视按钮） |
-| `inspect_scale` | float | 模型在检视视图里的缩放 |
-| `stackable` / `max_stack` | bool / int | 预留（本作大概率不需要） |
+---
 
-存放：`data/items/*.tres`（例如 `data/items/rusty_key.tres`）。
+## 3. 对话系统
 
-**对话数据**：`data/dialogue/*.json`（比 .tres 好手写、好 diff）
-
+### 3.1 数据格式（`data/dialogue/*.json`）
 ```json
 {
-  "id": "intro_narration",
+  "id": "intro_prank",
   "lines": [
-    { "speaker": "", "text": "你醒来时，门已经锁死了。", "voice": "", "wait": 0.6 },
-    { "speaker": "玩家", "text": "这是哪……", "voice": "", "next": "hint_1" }
+    { "speaker": "", "text": "欢迎来到我们搭的恐怖屋。", "pause": 0.4 },
+    { "speaker": "制作组", "text": "放心，我们是来整蛊你的。", "pause": 0.2 },
+    { "speaker": "", "text": "先试试解开第一个谜题吧。", "next": "hint" }
   ],
   "choices": {
-    "hint_1": [
-      { "text": "先看看四周", "next": "end", "set_flag": "tutorial_seen" },
-      { "text": "撞门试试", "next": "try_door", "set_flag": "tutorial_seen" }
+    "hint": [
+      { "text": "好", "next": "end", "set_flag": "tutorial_started" }
     ]
   }
 }
 ```
-> 具体格式按实现时的解析器定，原则：**文本、说话人、可选语音、可选分支、可设 flag**。
+- 字段：`speaker`（空 = 旁白）、`text`、`pause`（句后停顿）、`voice`（可选，覆盖合成音色）、`next`（跳转）、`set_flag`（推进时设 flag）。
+- 解析器容错：缺字段用默认值；找不到 id 时打印警告并跳过。
 
-### 2.2 状态层（两个 autoload）
+### 3.2 运行时（`scripts/autoload/dialogue_manager.gd`）
+- `start(id) -> void`、`advance() -> void`、`skip_typing() -> void`、`stop()`；
+- 信号：`line_started(speaker, text)`、`line_finished`、`choices_shown(options)`、`dialogue_finished(id)`；
+- 打字机：`RichTextLabel.visible_ratio` 用 `tween` 0→1，速度约 40 字/秒；按 E/空格跳过；
+- 与旁白联动：每行开始调 `VoiceSynth.speak(text)`（见 §6）。
 
-**`GameState`（`scripts/autoload/game_state.gd`）**
-- `flags: Dictionary`；`set_flag(k, v)`、`get_flag(k, default)`、`has_flag(k)`
-- 信号 `flag_changed(key, value)`（谜题/门/对话监听）
-- 剧情进度 `chapter`、玩家是否已看过教程 `tutorial_seen`
-- 预留 `save()/load()`（JSON → `user://save.json`）
-
-**`Inventory`（`scripts/autoload/inventory.gd`）**
-- `items: Array[ItemData]`
-- `add(item)`、`remove(id)`、`has(id)`、`get_item(id)`
-- 信号 `changed`、`item_added(item)`
-- 与 UI 解耦：UI 只监听信号
-
----
-
-## 3. 功能任务（按里程碑）
-
-### M1 · 基础框架（0.5 天）
-
-- [ ] **T1.1** 新建 `scripts/data/item_data.gd`（Resource）
-  - 8 个导出字段见 §2.1，`class_name ItemData`
-  - 验收：能在检查器里新建 `.tres` 并拖进 `@export var item: ItemData`
-- [ ] **T1.2** 新建 `scripts/autoload/game_state.gd`、`scripts/autoload/inventory.gd`
-  - 注册到 `project.godot` 的 `[autoload]`（`GameState`、`Inventory`）
-  - 验收：任意脚本里 `GameState.set_flag("x", true)` / `Inventory.add(item)` 可用
-- [ ] **T1.3** `interactable.gd` 扩展：新增 `item_to_give: ItemData`、`flag_to_set: StringName`、`consume_on_use: bool`
-  - 按 E 时：给物品 + 设 flag + （可选）隐藏自身
-  - 验收：房间放一个测试物品，按 E 后背包里有它、物体消失
-
-### M2 · 背包 UI（1 天）
-
-- [ ] **T2.1** `scenes/ui/inventory.tscn` + `scripts/ui/inventory_ui.gd`
-  - 结构：`CanvasLayer > Panel > VBox(标题/GridContainer) + 右侧详情面板(Icon/Name/Desc/查看按钮)`
-  - 开关：新增输入动作 `inventory`（Tab 或 I），打开时 `get_tree().paused = true`，UI `process_mode = ALWAYS`
-  - 验收：按 I 打开/关闭；拾取后格子实时出现；点格子显示详情
-- [ ] **T2.2** 拾取提示：屏幕下方 1.5s 淡出提示「获得：生锈的钥匙」
-  - 监听 `Inventory.item_added`
-- [ ] **T2.3** 空背包 / 选中态 / 键盘操作（方向键选择，Enter 查看）——基础可用即可
-
-### M3 · 物品检视（360°）（1 天）
-
-- [ ] **T3.1** `scenes/ui/inspect_view.tscn` + `scripts/ui/inspect_view.gd`
-  - 结构：`CanvasLayer > ColorRect(半透明黑) > SubViewportContainer > SubViewport > (Camera3D + Node3D 模型根 + OmniLight3D)`，下方 `Label`（名称/描述），右上角「×」
-  - 打开：从背包选中的 `ItemData.model_scene` 实例化进 SubViewport
-- [ ] **T3.2** 360° 交互：鼠标拖拽 → 模型根 `rotation.y += dx * 0.01`；滚轮缩放（`scale` 夹 0.5~2.0）；松手后缓慢自转（可选）
-  - 验收：任意角度可看，不穿模，Esc / × 关闭
-- [ ] **T3.3** 检视时游戏暂停；关闭后回到背包
-
-### M4 · 对话系统 + 旁白（1.5 天）
-
-- [ ] **T4.1** `scripts/autoload/dialogue_manager.gd`
-  - `start(id: StringName)` 读 `data/dialogue/<id>.json`，逐行推进；`advance()`；信号 `line_shown(speaker, text, voice)`、`choices_shown(options)`、`finished`
-  - 打字机效果（`RichTextLabel` + `visible_ratio` tween，可按键跳过）
-- [ ] **T4.2** `scenes/ui/dialogue_box.tscn` + `scripts/ui/dialogue_box.gd`
-  - 底部对话框：说话人、正文、继续指示、选项按钮（可选）
-- [ ] **T4.3** 触发方式：
-  - `scripts/world/dialogue_trigger.gd`（Area3D，进入自动播放，可 `once`）
-  - `interactable.gd` 再扩展：`dialogue_id` → 按 E 开始对话
-  - 验收：走近触发区自动播开场旁白；E 与 NPC/物件对话
-- [ ] **T4.4** 旁白音频：`voice` 字段指向 `res://` 音频（TTS 生成或录音），对话时播放，可静音
-
-### M5 · 谜题框架 + 主线内容（1.5 天）
-
-- [ ] **T5.1** `scripts/world/puzzle_lock.gd`（继承/扩展 interactable）
-  - 字段：`required_item: ItemData`、`required_flags: Array[StringName]`、`on_solve_flags`、`on_solve_open_door: NodePath`、`fail_text`
-  - 按 E：满足条件 → 解锁（开门/给物品/播对话）；不满足 → 显示提示
-- [ ] **T5.2** 三个谜题示例（可替换）：
-  1. **书桌抽屉**：需要「生锈的钥匙」→ 得到「纸条」→ 检视纸条得到密码线索
-  2. **电视灯**：按 E 关掉电视灯 → 墙上荧光字显现（切材质/显示 Label3D）→ 得到开门密码
-  3. **床垫**：翻找床垫 → 得到「地下室钥匙」→ 解锁走廊尽头的门
-- [ ] **T5.3** 结局判定：`GameState` 的 `escaped` flag → 播结局对话 → 回主菜单
-
-### M6 · 主菜单 + 新手教程（1 天）
-
-- [ ] **T6.1** `scenes/ui/main_menu.tscn` + `scripts/ui/main_menu.gd`
-  - 标题、开始游戏（切到 `scenes/rooms/room1.tscn`）、设置（音量）、退出
-  - `project.godot` 的 `run/main_scene` 改为 `scenes/ui/main_menu.tscn`
-  - 验收：启动进菜单，开始后进 room1
-- [ ] **T6.2** 开场教程：
-  - 首次进入（`GameState.tutorial_seen == false`）→ 黑屏 + 旁白对话（3~4 句）+ 操作提示（WASD/空格/E/I）
-  - 结束后 `set_flag("tutorial_seen", true)`
-- [ ] **T6.3** HUD：当前目标文字（如「找到逃出去的办法」）+ 拾取提示，`scenes/ui/hud.tscn`
-
-### M7 · 打磨（1 天，可选）
-
-- [ ] 存档/读档（`user://save.json`：flags + inventory）
-- [ ] 音效：脚步/开门/拾取/心跳
-- [ ] 门与走廊的视觉细节、灯光氛围统一
-- [ ] 失败/死亡（被抓住 → 重开本房间）
+### 3.3 UI（`scenes/ui/dialogue_box.tscn`）
+```
+DialogueBox (CanvasLayer, layer=90, process_mode=ALWAYS)
+└─ Panel (底部，高度约 30%)
+   ├─ Speaker (Label)
+   ├─ Text (RichTextLabel, bbcode)
+   ├─ Continue (Label「▼ 按 E 继续」闪烁)
+   └─ Choices (VBoxContainer, 默认隐藏)
+```
+- 打开对话时 `get_tree().paused = true`（UI ALWAYS），玩家不能动；关闭恢复。
+- 触发方式：
+  - `interactable.gd` 增加 `dialogue_id`：按 E 开始对话；
+  - `dialogue_trigger.gd`（Area3D，进入自动播，`once` 可选）。
 
 ---
 
-## 4. 需要新增/修改的文件清单（预估）
+## 4. 交互系统（统一 E 键）
+
+### 4.1 现有 `interactable.gd` 扩展
+| 新字段 | 作用 |
+| --- | --- |
+| `dialogue_id: StringName` | 按 E 播对话 |
+| `inspect_item: ItemData` | 按 E 打开检视（§5） |
+| `item_to_give: ItemData` | 按 E 拾取进背包 |
+| `flag_to_set: StringName` | 按 E 设 flag |
+| `consume_on_use: bool` | 用过后隐藏自身 |
+
+- 提示文字自动生成：检视 →「按 E 检视」；对话 →「按 E 交谈」；拾取 →「按 E 拾取」。
+- 优先级：对话 > 检视 > 拾取 > 开关灯/坐下。
+- 按 E 后统一走 `InteractionRouter`（小工具函数），避免每个脚本各写一遍。
+
+### 4.2 验收
+- 场景里放一个灯：走近出现「按 E 检视」，按 E 打开检视视图；
+- 放一个箱子：按 E 后物品进背包、箱子消失、屏幕提示「获得：xxx」。
+
+---
+
+## 5. 背包（列表式，左右分栏）
+
+### 5.1 布局
+```
+InventoryUI (CanvasLayer, layer=80, process_mode=ALWAYS)
+└─ HBox (全屏，左右各 50%)
+   ├─ Left  (VBox)
+   │   ├─ Title (Label「背包」)
+   │   └─ ItemList (列表：图标 + 名字，键盘/鼠标可选)
+   └─ Right (VBox)
+       ├─ Icon (TextureRect，128×128)
+       ├─ Name (Label)
+       ├─ Desc (RichTextLabel，自动换行)
+       ├─ UseButton (Button「使用」)
+       └─ Warning (Label，红色：现在不能使用/缺少条件)
+```
+- 开关：新增输入动作 `inventory`（`I` 键）；打开时暂停游戏（`paused = true`），关闭恢复。
+- **鼠标悬停**或**点击/键盘选中**都更新右侧信息（`ItemList.item_selected` + 自己加 `mouse_entered` 检测）。
+- 「使用」按钮：发 `Inventory.use_requested(item_id)`；如果当前没有可用目标 → `Warning` 显示「现在还不能使用」，2 秒后清除。
+
+### 5.2 数据
+- `ItemData`（Resource）：`id / display_name / description / icon / model_scene / inspect_scale / can_use`。
+- `Inventory`（autoload）：`items: Array[ItemData]`、`add/remove/has/get`、信号 `changed`。
+- `GameState`（autoload）：`flags: Dictionary`（谜题条件用），信号 `flag_changed`。
+
+### 5.3 验收
+- 拾取物品后按 I：左侧出现条目，点它右侧显示图标/名字/描述；
+- 若该物品此刻不能用，点使用在右侧红色提示；
+- 关闭背包后游戏继续，玩家位置不变。
+
+---
+
+## 6. 检视系统（蒙版 + 360° 旋转）
+
+### 6.1 交互流程
+1. 走近可检视物件 → 提示「按 E 检视」；
+2. 按 E → 全屏半透明黑蒙版（0.75）+ 物品 3D 模型出现在屏幕中央；
+3. 鼠标按住拖动 → 绕 Y 轴旋转（可 360°），上下拖动小幅俯仰；
+4. 滚轮缩放；松开后缓慢自转（可关）；
+5. 屏幕底部显示名称 + 描述文本（例如灯底图案的线索）；
+6. 按 E / Esc / 右上角 × 关闭，回到游戏。
+
+### 6.2 场景结构
+```
+InspectView (CanvasLayer, layer=85, process_mode=ALWAYS)
+├─ Dim (ColorRect 全屏 0,0,0,0.75)
+├─ ViewportBox (SubViewportContainer，居中，占屏 60%)
+│   └─ SubViewport (transparent_bg = true)
+│       ├─ Camera3D
+│       ├─ ModelRoot (Node3D，脚本旋转它)
+│       ├─ OmniLight3D ×2（主光 + 补光）
+│       └─ WorldEnvironment（可选，环境光）
+├─ CloseButton (Button「×」)
+└─ Info (Panel 底部)
+    ├─ Name (Label)
+    └─ Desc (RichTextLabel)
+```
+- 打开时：清空 `ModelRoot` 子节点 → `model_scene.instantiate()` → 放进去，按 `inspect_scale` 缩放，自动居中（用合并 AABB 算偏移）。
+- 玩家不能移动：`get_tree().paused = true`（UI ALWAYS），关闭恢复。
+- 模型自转用 `_process(delta)`：`rotation.y += spin_speed * delta`；拖动时暂停自转。
+
+### 6.3 验收
+- 任意角度都能看，模型不穿蒙版、不抖；
+- 关闭后游戏状态、玩家位置不变；
+- 不同物品用不同 `model_scene`，支持 `.glb` 直接引用。
+
+---
+
+## 7. 噪声旁白（不用录音）
+
+### 7.1 需求还原
+> 用噪声图样生成噪声；文字里每个字有固定的取值，对应噪声图里固定的东西，用来播放「嘟嘟囔囔」的旁白。
+
+### 7.2 实现方式（`scripts/audio/voice_synth.gd`，autoload 或静态单例）
+1. **噪声源**：启动时生成一张长度为 `N=4096` 的 `Float32Array`（值域 0..1），可用 `FastNoiseLite`（Godot 内置）按 `x = i * 0.01` 采样，或者直接用 `RandomNumberGenerator` 固定种子生成——**必须固定种子**，保证每次启动一致。
+2. **逐字映射（确定性）**：
+   ```gdscript
+   var cp := text.unicode_at(i)                 # 字符码位
+   var h := (cp * 2654435761) & 0xFFFFFFFF      # 稳定哈希
+   var idx := h % N
+   var amp := noise[idx]                        # 0..1 → 音量/波形
+   var semitone := h % 12                       # 音高抖动
+   var dur := 0.04 + float(h % 4) * 0.01        # 40~70ms
+   ```
+3. **合成**：按字顺序拼 PCM 片段：
+   - 波形 = `sin(2π·f·t)` 与噪声插值混合（噪声权重 ~0.3，听感更"沙哑"）；
+   - `f = base_freq * pow(2, semitone/12.0)`，`base_freq` 男声 ~110Hz / 女声 ~180Hz（可导出参数）；
+   - 每段包络：快起（5ms）+ 快落（15ms），避免爆音；
+   - 标点/空格：插入 60~120ms 静音；
+   - 最终生成 `AudioStreamWAV`（16-bit、22050Hz、单声道），交给 `AudioStreamPlayer` 播放。
+4. **接口**：`VoiceSynth.speak(text: String)`、`set_muted(bool)`、`set_pitch_scale(float)`。
+5. **缓存**：同一段文本的 WAV 缓存到字典（`text -> AudioStreamWAV`），避免重复合成。
+
+### 7.3 验收
+- 同一句话每次生成的音频**完全一致**（固定种子 + 确定性哈希）；
+- 不同字音高/音色不同，听起来像"咕哝的说话声"而不是电子噪音；
+- 文字长度 100 字以内合成耗时 < 50ms（一次性），不卡顿；
+- 可静音，音量跟随主音量。
+
+---
+
+## 8. 新手教程 + 第一个谜题（流程脚本）
+
+| 步骤 | 触发 | 表现 |
+| --- | --- | --- |
+| 1 | 启动 | 主菜单覆盖在 room1 画面上，玩家不能动 |
+| 2 | 点「开始游戏」 | 菜单消失；黑屏 0.5s；旁白（合成音）：「我们搭了个恐怖屋，来整蛊你的」 |
+| 3 | 旁白结束 | HUD 提示「WASD 移动」→ 玩家走到房间中央（`Area3D` 检测到）后进入下一步 |
+| 4 | 到达中央 | 提示「空格跳跃」；跳一次后继续 |
+| 5 | 提示「E 互动」 | 桌上放一个可检视的「台灯」；按 E 打开检视 |
+| 6 | 检视台灯 | 屏幕蒙版 + 360° 旋转；底部文字提示灯底有刻痕（第一个线索） |
+| 7 | 关闭检视 | 提示「I 打开背包」，展示刚检视的物品 |
+| 8 | 背包使用 | 用「灯座钥匙」开书桌抽屉 → 得到第一件关键道具 → 旁白「看来你还不算太笨」 |
+| 9 | 结束 | 设置 `tutorial_seen = true`，HUD 目标变成「找到逃出去的办法」 |
+
+- 引导用 `TutorialManager`（`scripts/autoload/tutorial_manager.gd`）按步骤推进，每步监听 flag/Area3D/信号，避免写死时间。
+- HUD：右上角目标文字 + 底部临时提示（2s 淡出）。
+
+---
+
+## 9. 数据与文件清单
 
 **新增**
 ```
@@ -174,17 +257,18 @@ scripts/data/item_data.gd
 scripts/autoload/game_state.gd
 scripts/autoload/inventory.gd
 scripts/autoload/dialogue_manager.gd
+scripts/autoload/tutorial_manager.gd
+scripts/audio/voice_synth.gd
+scripts/ui/main_menu.gd
 scripts/ui/inventory_ui.gd
 scripts/ui/inspect_view.gd
 scripts/ui/dialogue_box.gd
-scripts/ui/main_menu.gd
 scripts/ui/hud.gd
 scripts/world/dialogue_trigger.gd
-scripts/world/puzzle_lock.gd
+scenes/ui/main_menu.tscn
 scenes/ui/inventory.tscn
 scenes/ui/inspect_view.tscn
 scenes/ui/dialogue_box.tscn
-scenes/ui/main_menu.tscn
 scenes/ui/hud.tscn
 data/items/*.tres
 data/dialogue/*.json
@@ -192,43 +276,33 @@ data/dialogue/*.json
 
 **修改**
 ```
-project.godot           # autoload 注册、inventory 输入动作、主场景
-scripts/rooms/interactable.gd  # 扩展 item/dialogue/flag
-scenes/rooms/room1|2|3.tscn    # 摆线索物、谜题、对话触发
-corridor-1.tscn         # 尽头加锁门/结局判定
-docs/Project.md         # 新增系统说明
+project.godot                # autoload 注册 + inventory 输入动作
+scripts/rooms/interactable.gd # 扩展对话/检视/拾取/flag
+scenes/rooms/room1.tscn      # 挂 MainMenu、HUD、教程物件、第一个谜题
+docs/Project.md              # 新系统说明
 ```
 
 ---
 
-## 5. 排期建议
+## 10. 实现顺序（每一档都可单独验收）
 
-| 天 | 内容 |
-| --- | --- |
-| Day 1 | M1 框架 + M2 背包 |
-| Day 2 | M3 检视（360°）+ M4 对话骨架 |
-| Day 3 | M4 收尾 + M5 谜题与内容 |
-| Day 4 | M6 主菜单/教程 + M7 打磨 + 录旁白 |
+1. **A** 数据层：`ItemData` + `GameState` + `Inventory`（0.5 天）
+2. **B** 对话系统（管理器 + UI + 合成旁白）（1 天）
+3. **C** 主菜单覆盖层 + 暂停 + 开始/退出（0.5 天）
+4. **D** 交互扩展（E：对话/检视/拾取）（0.5 天）
+5. **E** 背包 UI（列表左右分栏 + 使用/警示）（1 天）
+6. **F** 检视系统（蒙版 + 360°）（1 天）
+7. **G** 教程流程 + 第一个谜题（1 天）
 
-> 依据聊天记录「明天先输提示词叫 AI 先写」：每个里程碑可以先让我产出**给 AI 的提示词**（包含数据结构、节点结构、验收标准），再落地代码。
-
----
-
-## 6. 待你确认的设计问题（审核重点）
-
-1. **背包形态**：格子 + 右侧详情（推荐）还是列表？
-2. **检视**：要不要暂停游戏？模型是每个物品单独做 `.glb`，还是复用现有素材包里的物件？
-3. **对话**：需要分支选项吗？还是纯线性旁白 + 单句确认？（分支会多约 0.5 天）
-4. **旁白形式**：TTS 生成 / 真人录音 / 纯字幕？
-5. **谜题数量**：先做 2 个（钥匙 + 电视）够不够？结局要几个？
-6. **存档**：这一版需要吗？（默认先不做，除非你要求）
-7. **恐怖强度**：要不要惊吓事件（突然关灯、脚步声、追逐）？这会影响 M7。
-8. **主菜单**：需要设置项（音量/画质）吗？
+> 顺序理由：A 是所有系统的数据基础；B 先做，教程的旁白就能复用；C 很独立；D/E/F 依赖 A；G 最后把所有东西串起来。
 
 ---
 
-## 7. 风险
+## 11. 待你确认
 
-- 现有素材包（URBAN/OFFICE/PSX）很大，检视用的单品模型要单独挑，避免把整个包带进 UI 场景；
-- 背包/对话 UI 会与现有 `interactable` 的 Label3D 提示并存，需要统一「互动提示」与「对话/拾取提示」的显示层级；
-- 对话系统若做分支 + 存档，flag 命名要提前定规范（建议 `chapter_x_xxx` 前缀）。
+1. 主菜单标题文字（暂定「被困」）和按钮文案；
+2. 「开始游戏」后是否要黑屏过渡再进游戏，还是直接能走；
+3. 背包里物品的「使用」是否会出现二次确认（还是直接生效）；
+4. 检视时是否允许旋转到任意角度（包括看到背面/底面）——我默认允许；
+5. 合成旁白的性别/音高偏好（默认偏中性、低频）；
+6. 第一个谜题的具体设计（暂定：检视台灯 → 得到钥匙 → 开抽屉），你有别的想法可以直接改。
