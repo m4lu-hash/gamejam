@@ -150,6 +150,10 @@ metadata/_edit_use_anchors_ = true
 
 [node name="DoorLeaf" parent="Doors" unique_id=910492629 instance=ExtResource("11_doorleaf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -4)
+locked = true
+lock_id = &"room1_door"
+key_hint = "锈钥匙"
+unlock_dialogue_id = &"door_unlocked"
 
 [node name="DoorToCorridor" type="Area3D" parent="Doors" unique_id=2084437538]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -4.5)

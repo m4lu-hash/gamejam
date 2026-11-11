@@ -2,10 +2,10 @@
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_rfeqg"]
 [ext_resource type="Script" uid="uid://dcutkcp54bu0j" path="res://addons/flickering_light/flickering_omni_light_3d.gd" id="2_qh71f"]
-[ext_resource type="PackedScene" uid="uid://c1w38e5tm11ib" path="res://scenes/player/player.tscn" id="3_player"]
 [ext_resource type="PackedScene" uid="uid://mtsy13i6rbtf" path="res://scenes/doors/door_leaf.tscn" id="4_doorleaf"]
 [ext_resource type="Script" uid="uid://26dt7oo43w68" path="res://scripts/rooms/door.gd" id="5_door"]
-[ext_resource type="Script" path="res://scripts/rooms/interactable.gd" id="6_interact"]
+[ext_resource type="Script" uid="uid://c7krn8r3e75uk" path="res://scripts/rooms/interactable.gd" id="6_interact"]
+[ext_resource type="PackedScene" uid="uid://c1w38e5tm11ib" path="res://scenes/player/player.tscn" id="3_player"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rfeqg"]
 shading_mode = 0
@@ -19,19 +19,6 @@ ambient_light_color = Color(0.100329734, 0.08839286, 0.19186223, 1)
 ambient_light_energy = 0.6
 volumetric_fog_enabled = true
 volumetric_fog_density = 0.0
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qh71f"]
-albedo_color = Color(0.59644604, 0.338554, 0.16658786, 1)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tafdu"]
-albedo_color = Color(0.42271644, 0, 0.013881101, 1)
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_5t5tk"]
-material = SubResource("StandardMaterial3D_tafdu")
-size = Vector2(1.6, 2.3)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_x874u"]
-size = Vector3(1.3261719, 0.5234375, 2.0257568)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_door"]
 size = Vector3(0.6, 2.3, 1.4)
@@ -143,26 +130,47 @@ exit_direction = Vector3(-1, 0, 0)
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DoorToRoom3" unique_id=1384592907]
 shape = SubResource("BoxShape3D_door")
 
-[node name="DoorLeafExit" parent="." instance=ExtResource("4_doorleaf")]
+[node name="DoorLeafExit" parent="." unique_id=1077066241 instance=ExtResource("4_doorleaf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.42, 0, -16.2)
-locked = true
+locked = false
 lock_id = &"exit_door"
 key_hint = "锈钥匙"
 unlock_dialogue_id = &"door_unlocked"
 
-[node name="ExitDoor" type="Area3D" parent="."]
+[node name="ExitDoor" type="Area3D" parent="." unique_id=834197890]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.9, 1.2, -16.5)
 script = ExtResource("5_door")
-exit_direction = Vector3(0, 0, -1)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="ExitDoor"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ExitDoor" unique_id=1351810415]
 shape = SubResource("BoxShape3D_door")
 
-[node name="ExitZone" type="Area3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.9, 1.0, -17.6)
+[node name="ExitZone" type="Area3D" parent="." unique_id=898247373]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.9, 1, -17.6)
 script = ExtResource("6_interact")
 dialogue_id = &"escape_end"
 flag_to_set = &"escaped"
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="ExitZone"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ExitZone" unique_id=579557417]
 shape = SubResource("BoxShape3D_door")
+
+[node name="player" parent="." node_paths=PackedStringArray("camera") instance=ExtResource("3_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0, 4)
+camera = NodePath("../mainCamera3D")
+
+[node name="SpawnFromRoom1" type="Marker3D" parent="." unique_id=1633381508]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -3.2, 0, 4)
+
+[node name="SpawnFromRoom2" type="Marker3D" parent="." unique_id=1805879273]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -3.2, 0, -4)
+
+[node name="SpawnFromRoom3" type="Marker3D" parent="." unique_id=464958130]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -3.2, 0, -12)
+
+[node name="DoorLeafRoom1" parent="." unique_id=1077066241 instance=ExtResource("4_doorleaf")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, 3.2)
+
+[node name="DoorLeafRoom2" parent="." unique_id=1440554801 instance=ExtResource("4_doorleaf")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, -4.8)
+
+[node name="DoorLeafRoom3" parent="." unique_id=1327246817 instance=ExtResource("4_doorleaf")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, -12.8)
