@@ -49,7 +49,26 @@ func _ready() -> void:
 	layer = 85
 	_close_button.pressed.connect(close)
 	_sub_viewport.size_changed.connect(_on_sub_viewport_size_changed)
+	# 环境光：即使灯光位置不对，模型也不会全黑
+	var env := Environment.new()
+	env.background_mode = Environment.BG_COLOR
+	env.background_color = Color(0.05, 0.06, 0.09, 1)
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	env.ambient_light_color = Color(0.75, 0.78, 0.9, 1)
+	env.ambient_light_energy = 0.9
+	var world_env := WorldEnvironment.new()
+	world_env.environment = env
+	_sub_viewport.add_child(world_env)
+	# 点击背景空白处也能关闭
+	var backdrop := get_node_or_null("Backdrop") as ColorRect
+	if backdrop != null:
+		backdrop.gui_input.connect(_on_backdrop_gui_input)
 	visible = false
+
+
+func _on_backdrop_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		close()
 
 
 ## 打开检视：生成模型、按 AABB 居中、应用缩放并暂停游戏。
@@ -67,9 +86,12 @@ func open(item: ItemData) -> void:
 	_yaw = 0.0
 	_pitch = 0.0
 
-	# model_scene 为空时只显示文字，不生成任何 3D 节点
+	# model_scene 为空时给一个占位方块，避免玩家看到一片空白
 	if item.model_scene != null:
 		_has_model = _spawn_model(item.model_scene)
+	else:
+		_spawn_placeholder()
+		_has_model = true
 
 	_model_root.rotation = Vector3.ZERO
 	_apply_zoom()
@@ -183,6 +205,21 @@ func _spawn_model(packed: PackedScene) -> bool:
 		radius = maxf(bounds.size.length() * 0.5, 0.05)
 	_frame_model(radius * _base_scale)
 	return true
+
+
+func _spawn_placeholder() -> void:
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(0.7, 0.7, 0.7)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.55, 0.6, 0.7, 1)
+	mat.emission_enabled = true
+	mat.emission = Color(0.15, 0.18, 0.25, 1)
+	mesh.material = mat
+	var mi := MeshInstance3D.new()
+	mi.name = "Placeholder"
+	mi.mesh = mesh
+	_model_root.add_child(mi)
+	_frame_model(0.7)
 
 
 ## 遍历所有可见网格，求 ModelRoot 局部空间中的合并 AABB。

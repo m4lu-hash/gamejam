@@ -267,7 +267,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.3, 0, -1.5)
 [node name="FileCabinetModel" type="Node3D" parent="FileCabinet" unique_id=1517119058]
 
 [node name="CabinetModel" parent="FileCabinet/FileCabinetModel" unique_id=1300345683 instance=ExtResource("17_cabinet")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.154378)
 
 [node name="DeskLampInteract" type="Area3D" parent="." unique_id=1474208758]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1.1, -1)

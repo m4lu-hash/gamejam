@@ -40,12 +40,14 @@ const NOISE_MASK := NOISE_SIZE - 1
 ## 固定种子：改动它会改变所有角色的音色
 const NOISE_SEED := 20261111
 ## 默认基频：中性偏低
-const BASE_FREQ := 130.0
-## 噪声在波形里的权重
-const NOISE_MIX := 0.3
-## 包络：5ms 快起 / 15ms 快落
-const ATTACK_SEC := 0.005
-const RELEASE_SEC := 0.015
+const BASE_FREQ := 105.0
+## 噪声在波形里的权重（越小越温和）
+const NOISE_MIX := 0.10
+## 包络：18ms 慢起 / 55ms 慢落（更柔和，不刺耳）
+const ATTACK_SEC := 0.018
+const RELEASE_SEC := 0.055
+## 一阶低通系数（越小越闷、越温和）
+const LOWPASS_ALPHA := 0.22
 ## 单段文本最长合成时长（秒），超出直接截断
 const MAX_SECONDS := 20.0
 ## 缓存上限（条），超出后淘汰最早的一条，防止无限增长
@@ -258,6 +260,7 @@ func _render(text: String) -> AudioStreamWAV:
 	var data := PackedByteArray()
 	data.resize(max_bytes)  # 预留 20 秒，写多少最后再裁
 	var pos := 0
+	var prev := 0.0  # 低通滤波器状态，跨字保持连续
 
 	for i in text.length():
 		var cp := text.unicode_at(i)
@@ -272,14 +275,14 @@ func _render(text: String) -> AudioStreamWAV:
 			pos += pause_frames * 2
 			continue
 
-		var semitone := h % 12
-		var dur := 0.04 + float(h % 4) * 0.01
+		var semitone := h % 7
+		var dur := 0.045 + float(h % 4) * 0.012
 		var frames := int(dur * float(SAMPLE_RATE))
 		if pos + frames * 2 > max_bytes:
 			break  # 超过 20 秒上限，整字截断
 
 		var timbre := _noise_table[h % NOISE_SIZE]
-		var amp := 0.30 + 0.42 * timbre  # 0.30~0.72，避免削波
+		var amp := 0.18 + 0.22 * timbre  # 0.18~0.40，整体音量更轻
 		var sine_amp := amp * (1.0 - NOISE_MIX)
 		var noise_amp := amp * NOISE_MIX
 
@@ -293,6 +296,9 @@ func _render(text: String) -> AudioStreamWAV:
 		for f in frames:
 			var s := _sine[phase >> PHASE_SHIFT] * sine_amp + _noise_audio[ni] * noise_amp
 			s *= env[f]
+			# 一阶低通：削掉刺耳的高频，听感更接近"咕哝"
+			s = prev + (s - prev) * LOWPASS_ALPHA
+			prev = s
 			phase = (phase + step) & PHASE_MASK
 			ni = (ni + stride) & NOISE_MASK
 			var v := int(s * 32767.0)

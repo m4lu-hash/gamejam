@@ -82,6 +82,9 @@ func _on_body_exited(body: Node3D) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not _inside or _player == null or _used:
 		return
+	# 有 UI 打开（检视/背包/对话）时由 UI 处理按键，交互区不要抢
+	if get_tree().paused:
+		return
 	if not event.is_action_pressed("interact"):
 		return
 	_interact()

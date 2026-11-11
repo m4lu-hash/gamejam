@@ -57,8 +57,10 @@ func dialogue() -> CanvasLayer:
 	return _dialogue
 
 
-## 打开检视
+## 打开检视（会先停掉正在播的对话，避免两个 UI 抢按键）
 func open_inspect(item: ItemData) -> void:
+	if DialogueManager.is_active():
+		DialogueManager.stop()
 	var view := inspect()
 	if view != null and view.has_method("open"):
 		view.call("open", item)
