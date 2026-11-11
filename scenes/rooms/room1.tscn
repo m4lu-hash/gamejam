@@ -15,10 +15,10 @@
 [ext_resource type="PackedScene" uid="uid://f7iwixyl1x5v" path="res://PSX-Derelict-Furniture-Standard/glb/mattress.glb" id="12_8b0r0"]
 [ext_resource type="Script" uid="uid://c7krn8r3e75uk" path="res://scripts/rooms/interactable.gd" id="13_interact"]
 [ext_resource type="PackedScene" path="res://scenes/ui/main_menu.tscn" id="14_menu"]
-[ext_resource type="PackedScene" path="res://OFFICE/OFFICE/extras/circular_desklamp.glb" id="15_lamp"]
-[ext_resource type="PackedScene" path="res://OFFICE/OFFICE/stationary/paper_single_sheet.glb" id="16_paper"]
-[ext_resource type="PackedScene" path="res://OFFICE/OFFICE/file_cabinets/file_cabinet_small.glb" id="17_cabinet"]
-[ext_resource type="PackedScene" path="res://OFFICE/OFFICE/file_cabinets/file_cabinet_small_open.glb" id="18_cabinet_open"]
+[ext_resource type="PackedScene" uid="uid://h163gv51pbcc" path="res://OFFICE/OFFICE/extras/circular_desklamp.glb" id="15_lamp"]
+[ext_resource type="PackedScene" uid="uid://dte04qlkjkfpy" path="res://OFFICE/OFFICE/stationary/paper_single_sheet.glb" id="16_paper"]
+[ext_resource type="PackedScene" uid="uid://6mmbr5thxwxd" path="res://OFFICE/OFFICE/file_cabinets/file_cabinet_small.glb" id="17_cabinet"]
+[ext_resource type="PackedScene" uid="uid://cahmy4x0ccp3e" path="res://OFFICE/OFFICE/file_cabinets/file_cabinet_small_open.glb" id="18_cabinet_open"]
 [ext_resource type="Resource" path="res://data/items/desk_lamp.tres" id="19_lamp_item"]
 [ext_resource type="Resource" path="res://data/items/paper.tres" id="20_paper_item"]
 [ext_resource type="Resource" path="res://data/items/rusty_key.tres" id="21_key_item"]
@@ -253,50 +253,51 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3653133, 1.0048591, 0.7007
 [node name="CollisionShape3D" type="CollisionShape3D" parent="FridgeCollision" unique_id=2016632971]
 shape = SubResource("BoxShape3D_fridge")
 
-[node name="MainMenu" parent="." instance=ExtResource("14_menu")]
+[node name="MainMenu" parent="." unique_id=470048984 instance=ExtResource("14_menu")]
 
-[node name="DeskLampProp" parent="." instance=ExtResource("15_lamp")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 0.9, -1.0)
+[node name="DeskLampProp" parent="." unique_id=230461202 instance=ExtResource("15_lamp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.9, -1)
 
-[node name="PaperProp" parent="." instance=ExtResource("16_paper")]
+[node name="PaperProp" parent="." unique_id=1062857325 instance=ExtResource("16_paper")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 0.9, -1.4)
 
-[node name="FileCabinet" type="Node3D" parent="."]
+[node name="FileCabinet" type="Node3D" parent="." unique_id=144573929]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.3, 0, -1.5)
 
-[node name="FileCabinetModel" type="Node3D" parent="FileCabinet"]
+[node name="FileCabinetModel" type="Node3D" parent="FileCabinet" unique_id=1517119058]
 
-[node name="CabinetModel" parent="FileCabinet/FileCabinetModel" instance=ExtResource("17_cabinet")]
+[node name="CabinetModel" parent="FileCabinet/FileCabinetModel" unique_id=1300345683 instance=ExtResource("17_cabinet")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.154378)
 
-[node name="DeskLampInteract" type="Area3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 1.1, -1.0)
+[node name="DeskLampInteract" type="Area3D" parent="." unique_id=1474208758]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1.1, -1)
 script = ExtResource("13_interact")
 inspect_item = ExtResource("19_lamp_item")
 flag_to_set = &"tutorial_inspected"
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DeskLampInteract"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DeskLampInteract" unique_id=232950048]
 shape = SubResource("SphereShape3D_interact")
 
-[node name="PaperInteract" type="Area3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 1.0, -1.4)
+[node name="PaperInteract" type="Area3D" parent="." unique_id=260153124]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 1, -1.4)
 script = ExtResource("13_interact")
-item_to_give = ExtResource("20_paper_item")
 flag_to_set = &"tutorial_paper_taken"
+item_to_give = ExtResource("20_paper_item")
 consume_on_use = true
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="PaperInteract"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PaperInteract" unique_id=118811223]
 shape = SubResource("SphereShape3D_interact")
 
-[node name="CabinetInteract" type="Area3D" parent="."]
+[node name="CabinetInteract" type="Area3D" parent="." unique_id=163906311]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.1, 1.2, -1.5)
 script = ExtResource("13_interact")
 dialogue_id = &"cabinet_open"
+flag_to_set = &"cabinet_opened"
 item_to_give = ExtResource("21_key_item")
 requires_item = ExtResource("20_paper_item")
-flag_to_set = &"cabinet_opened"
 consume_on_use = true
 swap_target = NodePath("../FileCabinet/FileCabinetModel")
 swap_scene = ExtResource("18_cabinet_open")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="CabinetInteract"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CabinetInteract" unique_id=431191539]
 shape = SubResource("SphereShape3D_interact")

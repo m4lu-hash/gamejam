@@ -14,7 +14,14 @@ var _dialogue: CanvasLayer
 
 
 func _ready() -> void:
-	pass  # HUD 等第一次用到时再懒加载，避免启动阶段 add_child 失败
+	# 开局就把背包/对话框实例化好，否则按 I 时节点还不存在，输入没人接
+	_warm_up.call_deferred()
+
+
+func _warm_up() -> void:
+	hud()
+	inventory()
+	dialogue()
 
 
 func hud() -> CanvasLayer:
