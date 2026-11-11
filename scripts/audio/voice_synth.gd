@@ -55,7 +55,6 @@ const HASH_MUL := 2654435761
 
 ## 正弦波表长度（2 的幂，索引用 & 掩码）
 const SINE_SIZE := 4096
-const SINE_MASK := SINE_SIZE - 1
 ## 相位定点小数位数：相位用 int 存，高 16 位是波表下标
 const PHASE_SHIFT := 16
 const PHASE_MASK := (SINE_SIZE << PHASE_SHIFT) - 1
@@ -103,10 +102,11 @@ func speak(text: String) -> void:
 	_player.play()
 
 
-## 立刻停止播放。
+## 立刻停止播放。若当时正在播，会补发一次 finished，方便对话流程推进。
 func stop() -> void:
-	if _player != null:
+	if _player != null and _player.playing:
 		_player.stop()
+		finished.emit()
 
 
 ## 静音开关。静音时会立刻停掉正在播的声音，但缓存与合成逻辑照常。
@@ -230,8 +230,9 @@ func _get_envelope(frames: int) -> PackedFloat32Array:
 	env.resize(frames)
 	var attack := maxi(1, int(ATTACK_SEC * float(SAMPLE_RATE)))
 	var release := maxi(1, int(RELEASE_SEC * float(SAMPLE_RATE)))
-	attack = mini(attack, maxi(1, frames / 3))
-	release = mini(release, maxi(1, frames / 3))
+	# 最短音节 40ms 也放得下 5ms+15ms；这里只是兜底，防止以后改参数时包络重叠
+	if attack + release > frames:
+		release = maxi(1, frames - attack)
 	for i in frames:
 		var v := 1.0
 		if i < attack:
