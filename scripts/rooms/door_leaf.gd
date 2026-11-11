@@ -50,6 +50,7 @@ var _push_sign := 1.0     # 朝"房间外"的角度方向
 var _inward_sign := -1.0  # 朝"房间内"的角度方向
 var _closed_leaf_dir := Vector3.FORWARD
 var _ignore_until := 0    # 出生保护期：这段时间内不自动开门、碰撞关闭
+var _lock_prompt: Label3D  # 锁着时在门上的「按 E 开锁」提示
 
 @onready var hinge: Node3D = $Hinge
 @onready var _collision: CollisionShape3D = $Hinge/StaticBody3D/CollisionShape3D
@@ -65,6 +66,14 @@ func _ready() -> void:
 	_compute_directions()
 	if open_on_start:
 		open_at_angle(max_swing_deg)
+	_lock_prompt = Label3D.new()
+	_lock_prompt.text = "按 E 开锁（需要：%s）" % key_hint
+	_lock_prompt.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_lock_prompt.pixel_size = 0.008
+	_lock_prompt.outline_size = 8
+	_lock_prompt.position = Vector3(0.8, 2.0, 0.0)
+	_lock_prompt.visible = false
+	add_child(_lock_prompt)
 
 
 func _physics_process(delta: float) -> void:
@@ -118,6 +127,12 @@ func _physics_process(delta: float) -> void:
 
 	hinge.rotation.y = _angle
 	is_open = absf(_angle) > deg_to_rad(8.0)
+
+	# 锁着且玩家靠近时显示开锁提示
+	if _lock_prompt != null:
+		_lock_prompt.visible = locked and player != null and dist < 2.2
+		if not locked:
+			_lock_prompt.text = ""
 
 	# 门在自动转动、或出生保护期内，且玩家在门口附近时：临时关掉碰撞，避免把人挤出去
 	if player != null:

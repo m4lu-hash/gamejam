@@ -55,13 +55,24 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _try_unlock() -> void:
+	var found_any_key := false
 	for item in Inventory.items:
-		if item is KeyData and (item as KeyData).can_unlock(_door.get("lock_id")):
-			if bool(_door.call("try_unlock", item)):
-				UIManager.toast("锁开了：%s" % item.display_name)
-				GameState.set_flag(StringName("unlocked_" + String(_door.get("lock_id"))), true)
-				return
-	UIManager.toast("需要：%s" % String(_door.get("key_hint")))
+		if not (item is KeyData):
+			continue
+		found_any_key = true
+		if not (item as KeyData).can_unlock(_door.get("lock_id")):
+			continue
+		if bool(_door.call("try_unlock", item)):
+			UIManager.toast("用「%s」打开了锁" % item.display_name)
+			GameState.set_flag(StringName("unlocked_" + String(_door.get("lock_id"))), true)
+			# 立刻把门打开，不用等靠近自动开
+			if _door.has_method("open_with_animation"):
+				_door.call("open_with_animation", 100.0, false)
+		return
+	if found_any_key:
+		UIManager.toast("不是这个钥匙")
+	else:
+		UIManager.toast("需要：%s" % String(_door.get("key_hint")))
 
 
 func _find_nearby_door() -> void:

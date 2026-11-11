@@ -98,8 +98,7 @@ func show_dialogue(id: StringName, blocking := true) -> bool:
 	var box := dialogue()
 	if box == null:
 		return false
-	if "blocking" in box:
-		box.set("blocking", blocking)
+	box.set("blocking", blocking)
 	_when_ready(box, func() -> void:
 		DialogueManager.start(id)
 	)
