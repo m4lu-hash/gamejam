@@ -4,6 +4,7 @@ extends CanvasLayer
 var _objective: Label
 var _toast: Label
 var _toast_tween: Tween
+var _pending_objective := ""
 
 
 func _ready() -> void:
@@ -13,11 +14,17 @@ func _ready() -> void:
 	_toast = get_node_or_null("Toast") as Label
 	if _toast != null:
 		_toast.modulate.a = 0.0
+	if not _pending_objective.is_empty() and _objective != null:
+		_objective.text = "目标：" + _pending_objective
+		_pending_objective = ""
 
 
 func set_objective(text: String) -> void:
-	if _objective != null:
-		_objective.text = "目标：" + text
+	if _objective == null:
+		# 节点还没 ready（deferred add），先存下来，ready 时再显示
+		_pending_objective = text
+		return
+	_objective.text = "目标：" + text
 
 
 func toast(text: String, duration := 2.0) -> void:

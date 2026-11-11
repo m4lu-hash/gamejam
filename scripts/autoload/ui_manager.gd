@@ -124,5 +124,6 @@ func _ensure(path: String) -> CanvasLayer:
 	var inst := packed.instantiate()
 	if inst == null:
 		return null
-	get_tree().root.add_child(inst)
+	# 用 deferred：启动/切场景时 root 正在 setup children，直接 add_child 会失败
+	get_tree().root.add_child.call_deferred(inst)
 	return inst as CanvasLayer

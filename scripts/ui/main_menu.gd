@@ -12,11 +12,15 @@ func _ready() -> void:
 	if GameState.has_flag(&"menu_seen"):
 		queue_free()
 		return
-	# 菜单期间隐藏 HUD（目标文字别叠在标题上）
+	# 菜单期间隐藏 HUD（延迟一帧，避免在 root setup 阶段 add_child 失败）
+	_hide_hud.call_deferred()
+	get_tree().paused = true
+
+
+func _hide_hud() -> void:
 	var hud := UIManager.hud()
 	if hud != null:
 		hud.visible = false
-	get_tree().paused = true
 	var start_btn := get_node_or_null("Panel/Buttons/StartButton") as Button
 	var quit_btn := get_node_or_null("Panel/Buttons/QuitButton") as Button
 	if start_btn != null:
