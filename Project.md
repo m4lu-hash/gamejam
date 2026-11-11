@@ -410,3 +410,85 @@ func can_unlock(lock_id: StringName) -> bool
 - 走廊尽头 `DoorLeafExit`：`locked = true`，`lock_id = "exit_door"`，钥匙提示「锈钥匙」；
 - `rusty_key.tres` 是 `KeyData`，`unlock_ids = ["exit_door"]`，由文件柜谜题产出；
 - 门后 `ExitZone` 触发 `escape_end` 对话，设置 `escaped` flag（演示结局）。
+
+
+---
+
+## UI 节点引用规范（必须遵守）
+
+**禁止**在 UI 脚本里用 `@onready var x = $A/B/C`。路径写死，节点一改名/挪层级就静默变成 `null`，
+报错还很难找。统一改成 **`@export` 绑定 + 数组校验 + assert**。
+
+### 正确写法
+
+```gdscript
+extends CanvasLayer
+
+@export var title_label: Label
+@export var list: ItemList
+@export var use_button: Button
+
+var _refs: Array = []
+
+
+func _ready() -> void:
+	_refs = [title_label, list, use_button]
+	for i in _refs.size():
+		assert(_refs[i] != null, "MyPanel: node ref %d is null, check scene bindings" % i)
+	# 从这里开始再使用节点
+```
+
+### 场景里怎么绑定
+
+在 `.tscn` 的根节点上加 `node_paths`，并写 NodePath：
+
+```
+[node name="MyPanel" type="CanvasLayer" node_paths=PackedStringArray("title_label", "list", "use_button")]
+title_label = NodePath("Panel/Title")
+list = NodePath("Panel/List")
+use_button = NodePath("Panel/UseButton")
+```
+
+也可以直接在编辑器检查器里把节点拖到导出槽位（推荐，不容易写错路径）。
+
+### 规则
+
+1. 所有 UI 脚本的节点引用一律 `@export`，**不许 `$` 硬编码**；
+2. `_ready()` 里把引用放进 `_refs` 数组，逐个 `assert(_refs[i] != null, "...")`；
+3. 用 `get_node_or_null()` 的地方也要 assert（`inventory_ui.gd` / `hud.gd` / `main_menu.gd` 已加）；
+4. 节点改名/移动后，绑定由编辑器维护，脚本不用动；
+5. 导出变量**不要和函数参数/局部变量重名**（比如 `text`、`speaker`），否则会覆盖成员变量；
+6. `assert` 只在 debug 构建生效，发布构建里会被剔除——它是开发期保护，不是运行时兜底。
+
+### 现有示例
+
+| 脚本 | 引用 |
+| --- | --- |
+| `scripts/ui/inspect_view.gd` | `viewport_container / sub_viewport / camera / key_light / fill_light / model_root / name_label / desc_label / close_button` |
+| `scripts/ui/dialogue_box.gd` | `speaker_label / text_label / continue_label / choices_box` |
+| `scripts/ui/inventory_ui.gd` | 8 个节点（列表/图标/名字/描述/使用/取消/警示/空提示） |
+| `scripts/ui/hud.gd` | `Objective / Toast` |
+| `scripts/ui/main_menu.gd` | `StartButton / QuitButton` |
+
+---
+
+## UI 架构（UIManager）
+
+`UIManager`（autoload）负责懒加载并持有全部 UI：
+
+| 字段 / 方法 | 说明 |
+| --- | --- |
+| `hud()` / `inventory()` / `inspect()` / `dialogue()` | 懒加载对应场景并返回（只创建一次） |
+| `open_inspect(item)` | 打开 3D 检视（会先停掉正在播的对话，并隐藏 HUD） |
+| `toggle_inventory()` | 开关背包 |
+| `show_dialogue(id, blocking=true)` | 播放对话；`blocking=false` 用于开场旁白（不暂停、可走动） |
+| `set_objective(text)` / `toast(text)` | HUD 目标 / 临时提示 |
+
+注意点：
+
+- UI 节点用 `root.add_child.call_deferred()` 延迟挂载，避免启动/切场景时
+  `Parent node is busy setting up children` 报错；
+- 延迟挂载后节点可能还没进树，调用 `open()` / `show_dialogue()` 前要等它的 `ready`
+  （`UIManager._when_ready()` 已处理）；
+- 暂停栈：打开 UI 时记录是不是自己暂停的（`_paused_by_me`），关闭时只恢复自己暂停的那次，
+  避免背包/检视/对话互相覆盖 `paused`。
