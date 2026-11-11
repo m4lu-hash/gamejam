@@ -376,3 +376,37 @@ RoomManager="*res://scripts/autoload/room_manager.gd"
 5. **`p_3d.gd` 每帧写 `get_viewport().scaling_3d_scale = 0.40`**：这是个降分辨率提帧的 hack，
    写在 `_physics_process` 里会让整个视口一直以 40% 渲染。要改画质请改这里（本次未动玩法逻辑）。
 6. 仓库还没 `export_presets.cfg`，导出前需按 §1 建预设。
+---
+
+## 锁与钥匙（Lock / Key）
+
+### 门（`door_leaf.gd`）
+| 导出 | 说明 |
+| --- | --- |
+| `locked` | 是否锁着。锁着时不会自动开，门洞触发器也**不允许通过** |
+| `lock_id` | 锁的编号（StringName），钥匙按它匹配 |
+| `key_hint` | 没钥匙时提示里显示的钥匙名 |
+| `unlock_dialogue_id` | 开锁时播放的对话（可空） |
+
+- `is_locked()`：查询是否锁着；
+- `try_unlock(key: ItemData) -> bool`：钥匙匹配则解锁。
+
+### 钥匙（`scripts/data/key_data.gd`）
+```gdscript
+class_name KeyData
+extends ItemData
+@export var unlock_ids: Array[StringName] = []
+func can_unlock(lock_id: StringName) -> bool
+```
+钥匙是背包里的物品（`Inventory`），`unlock_ids` 里列出它能开的锁。
+
+### 开锁流程（`door.gd`）
+1. 玩家站在锁着的门洞触发区里按 E；
+2. 遍历背包里的 `KeyData`，找 `can_unlock(lock_id)` 为真的；
+3. 找到 → `door_leaf.try_unlock()` → 门解锁、播 `unlock_dialogue_id`、设 `unlocked_<lock_id>` flag；
+4. 找不到 → 提示「需要：<key_hint>」。
+
+### 当前示例
+- 走廊尽头 `DoorLeafExit`：`locked = true`，`lock_id = "exit_door"`，钥匙提示「锈钥匙」；
+- `rusty_key.tres` 是 `KeyData`，`unlock_ids = ["exit_door"]`，由文件柜谜题产出；
+- 门后 `ExitZone` 触发 `escape_end` 对话，设置 `escaped` flag（演示结局）。
