@@ -407,9 +407,9 @@ func can_unlock(lock_id: StringName) -> bool
 4. 找不到 → 提示「需要：<key_hint>」。
 
 ### 当前示例
-- 走廊尽头 `DoorLeafExit`：`locked = true`，`lock_id = "exit_door"`，钥匙提示「锈钥匙」；
-- `rusty_key.tres` 是 `KeyData`，`unlock_ids = ["exit_door"]`，由文件柜谜题产出；
-- 门后 `ExitZone` 触发 `escape_end` 对话，设置 `escaped` flag（演示结局）。
+- room1 的 `Doors/DoorLeaf`（通往走廊的那扇）：`locked = true`，`lock_id = "room1_door"`，钥匙提示「锈钥匙」；
+- `rusty_key.tres` 是 `KeyData`，`unlock_ids = ["room1_door"]`，由文件柜谜题产出——拿到钥匙才能开 room1 的门去走廊；
+- 走廊尽头 `DoorLeafExit` 目前 `locked = false`（后续要加第二把锁/钥匙时，按同样方式设 `lock_id` 并让某把钥匙的 `unlock_ids` 包含它即可）。
 
 
 ---
