@@ -88,6 +88,31 @@ mesh = SubResource("PlaneMesh_qh71f")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=96972662]
 environment = SubResource("Environment_tafdu")
 
+[node name="FlickeringOmniLight3D" type="OmniLight3D" parent="." unique_id=68385622]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 2.8261657, 4)
+light_color = Color(0.7488, 0.872, 0.96, 1)
+light_energy = 0.462
+script = ExtResource("2_qh71f")
+metadata/_custom_type_script = "uid://dcutkcp54bu0j"
+
+[node name="FlickeringOmniLight3D2" type="OmniLight3D" parent="." unique_id=1957590746]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7494485, 1.384543, -4)
+light_color = Color(0.468, 0.545, 0.6, 1)
+light_energy = 1.134
+omni_range = 2.072
+omni_attenuation = 2.433
+script = ExtResource("2_qh71f")
+pattern = "mmmmmmmm"
+metadata/_custom_type_script = "uid://dcutkcp54bu0j"
+
+[node name="FlickeringOmniLight3D3" type="OmniLight3D" parent="." unique_id=1639782171]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 2.8261657, -12)
+light_color = Color(0.7488, 0.872, 0.96, 1)
+light_energy = 0.2
+script = ExtResource("2_qh71f")
+pattern = "mmmmmmmm"
+metadata/_custom_type_script = "uid://dcutkcp54bu0j"
+
 [node name="DoorToRoom1" type="Area3D" parent="." unique_id=1911516337]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.45, 1.2, 4)
 script = ExtResource("5_door")
