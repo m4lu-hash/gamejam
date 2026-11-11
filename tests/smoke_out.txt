@@ -1,0 +1,7 @@
+Godot Engine v4.7.2.stable.steam.ed1daf0bf - https://godotengine.org
+
+smoke: start
+smoke: loaded=true
+smoke: new ok
+smoke: added, noise size=0
+smoke: synth bytes=3968

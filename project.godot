@@ -21,6 +21,9 @@ RoomManager="*res://scripts/autoload/room_manager.gd"
 GameState="*res://scripts/autoload/game_state.gd"
 Inventory="*res://scripts/autoload/inventory.gd"
 DialogueManager="*res://scripts/autoload/dialogue_manager.gd"
+UIManager="*res://scripts/autoload/ui_manager.gd"
+TutorialManager="*res://scripts/autoload/tutorial_manager.gd"
+VoiceSynth="*res://scripts/audio/voice_synth.gd"
 
 [display]
 

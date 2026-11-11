@@ -94,7 +94,12 @@ func _show_current() -> void:
 	var line: Dictionary = _lines[_index]
 	if line.has("set_flag"):
 		GameState.set_flag(StringName(line["set_flag"]), true)
-	line_started.emit(String(line.get("speaker", "")), String(line.get("text", "")))
+	var text := String(line.get("text", ""))
+	line_started.emit(String(line.get("speaker", "")), text)
+	# 合成旁白（噪声语音）
+	var synth := get_node_or_null("/root/VoiceSynth")
+	if synth != null and not text.is_empty():
+		synth.call("speak", text)
 
 
 func _show_choices(key: String) -> void:

@@ -1,0 +1,116 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/inspect_view.gd" id="1_inspect"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 32.0
+content_margin_top = 20.0
+content_margin_right = 32.0
+content_margin_bottom = 20.0
+bg_color = Color(0.035, 0.045, 0.065, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.56, 0.66, 0.8, 0.35)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[node name="InspectView" type="CanvasLayer"]
+process_mode = 3
+layer = 85
+visible = false
+script = ExtResource("1_inspect")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.75)
+
+[node name="ViewportContainer" type="SubViewportContainer" parent="."]
+anchor_left = 0.2
+anchor_top = 0.18
+anchor_right = 0.8
+anchor_bottom = 0.78
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="ViewportContainer"]
+process_mode = 3
+transparent_bg = true
+own_world_3d = true
+size = Vector2i(1152, 648)
+render_target_update_mode = 4
+
+[node name="Camera3D" type="Camera3D" parent="ViewportContainer/SubViewport"]
+position = Vector3(0, 0, 4)
+projection = 1
+current = true
+size = 2.0
+near = 0.05
+far = 100.0
+
+[node name="KeyLight" type="OmniLight3D" parent="ViewportContainer/SubViewport"]
+position = Vector3(2.2, 2.4, 3.2)
+light_color = Color(1, 0.95, 0.88, 1)
+light_energy = 3.0
+omni_range = 8.0
+
+[node name="FillLight" type="OmniLight3D" parent="ViewportContainer/SubViewport"]
+position = Vector3(-2.6, -0.4, 2.0)
+light_color = Color(0.68, 0.8, 1, 1)
+light_energy = 1.2
+omni_range = 8.0
+
+[node name="ModelRoot" type="Node3D" parent="ViewportContainer/SubViewport"]
+
+[node name="InfoPanel" type="PanelContainer" parent="."]
+anchor_left = 0.14
+anchor_top = 0.8
+anchor_right = 0.86
+anchor_bottom = 0.95
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="InfoVBox" type="VBoxContainer" parent="InfoPanel"]
+theme_override_constants/separation = 8
+
+[node name="NameLabel" type="Label" parent="InfoPanel/InfoVBox"]
+theme_override_font_sizes/font_size = 38
+theme_override_colors/font_color = Color(1, 0.93, 0.78, 1)
+text = "物品名称"
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="InfoPanel/InfoVBox"]
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/normal_font_size = 24
+text = "物品描述"
+scroll_active = false
+autowrap_mode = 3
+
+[node name="CloseButton" type="Button" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -88.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 88.0
+grow_horizontal = 0
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.86, 0.89, 0.94, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 44
+flat = true
+text = "×"
+tooltip_text = "关闭（Esc / E）"

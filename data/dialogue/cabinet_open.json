@@ -1,0 +1,8 @@
+{
+  "id": "cabinet_open",
+  "lines": [
+    { "speaker": "", "text": "文件柜「咔」地弹开了。" },
+    { "speaker": "", "text": "你在最底层摸到一把锈钥匙。" },
+    { "speaker": "制作组", "text": "看来你还不算太笨。" }
+  ]
+}

@@ -25,7 +25,7 @@ func remove(id: StringName) -> bool:
 	return false
 
 
-func has(id: StringName) -> bool:
+func has_item(id: StringName) -> bool:
 	return get_item(id) != null
 
 
