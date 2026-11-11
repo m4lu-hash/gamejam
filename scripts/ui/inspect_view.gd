@@ -6,8 +6,8 @@ extends CanvasLayer
 ## 关闭完成时发出，外部可据此恢复自己的 UI 状态
 signal closed
 
-## 不拖动时的自转速度（弧度 / 秒）
-@export var auto_spin_speed: float = 0.3
+## 不拖动时的自转速度（弧度 / 秒）——默认 0：不自动转，玩家自己拖
+@export var auto_spin_speed: float = 0.0
 ## 拖动灵敏度（弧度 / 像素）
 @export var drag_sensitivity: float = 0.01
 ## 滚轮每一格的缩放倍率
@@ -59,16 +59,7 @@ func _ready() -> void:
 	var world_env := WorldEnvironment.new()
 	world_env.environment = env
 	_sub_viewport.add_child(world_env)
-	# 点击背景空白处也能关闭
-	var backdrop := get_node_or_null("Backdrop") as ColorRect
-	if backdrop != null:
-		backdrop.gui_input.connect(_on_backdrop_gui_input)
 	visible = false
-
-
-func _on_backdrop_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		close()
 
 
 ## 打开检视：生成模型、按 AABB 居中、应用缩放并暂停游戏。

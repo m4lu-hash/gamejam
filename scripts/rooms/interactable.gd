@@ -33,6 +33,7 @@ var _used := false
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 	if prompt_text.is_empty():
@@ -45,6 +46,14 @@ func _ready() -> void:
 	_prompt.visible = false
 	_prompt.position = Vector3(0.0, 1.6, 0.0)
 	add_child(_prompt)
+
+
+func _process(_delta: float) -> void:
+	# 有 UI 打开（暂停）时隐藏提示，避免文字叠在检视/背包画面上
+	if _prompt != null:
+		var want := _inside and not get_tree().paused
+		if _prompt.visible != want:
+			_prompt.visible = want
 
 
 func _default_prompt() -> String:

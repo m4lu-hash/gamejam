@@ -48,7 +48,15 @@ func _on_item_used(item: ItemData) -> void:
 func inspect() -> CanvasLayer:
 	if _inspect == null or not is_instance_valid(_inspect):
 		_inspect = _ensure(INSPECT_SCENE)
+		if _inspect != null and _inspect.has_signal("closed"):
+			_inspect.connect("closed", Callable(self, "_on_inspect_closed"))
 	return _inspect
+
+
+func _on_inspect_closed() -> void:
+	var h := hud()
+	if h != null:
+		h.visible = true
 
 
 func dialogue() -> CanvasLayer:
@@ -64,6 +72,9 @@ func open_inspect(item: ItemData) -> void:
 	var view := inspect()
 	if view != null and view.has_method("open"):
 		view.call("open", item)
+		var h := hud()
+		if h != null:
+			h.visible = false
 
 
 ## 打开/关闭背包

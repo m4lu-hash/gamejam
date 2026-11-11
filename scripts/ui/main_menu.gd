@@ -12,6 +12,10 @@ func _ready() -> void:
 	if GameState.has_flag(&"menu_seen"):
 		queue_free()
 		return
+	# 菜单期间隐藏 HUD（目标文字别叠在标题上）
+	var hud := UIManager.hud()
+	if hud != null:
+		hud.visible = false
 	get_tree().paused = true
 	var start_btn := get_node_or_null("Panel/Buttons/StartButton") as Button
 	var quit_btn := get_node_or_null("Panel/Buttons/QuitButton") as Button
@@ -24,6 +28,9 @@ func _ready() -> void:
 func _on_start() -> void:
 	GameState.set_flag(&"menu_seen", true)
 	get_tree().paused = false
+	var hud := UIManager.hud()
+	if hud != null:
+		hud.visible = true
 	started.emit()
 	queue_free()
 	if has_node("/root/TutorialManager"):

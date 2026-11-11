@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://04s07e371ha1"]
+﻿[gd_scene format=3 uid="uid://04s07e371ha1"]
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_htvxh"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://shaders/level_blur.gdshader" id="2_vddjn"]
@@ -133,10 +133,10 @@ shape = SubResource("BoxShape3D_door_x")
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -2.2, 0, 0)
 
 [node name="RoomLabel" type="Label3D" parent="." unique_id=1481211202]
+visible = false
 transform = Transform3D(0.70130914, 5.9604645e-08, 0.7128576, 1.1641532e-09, 1.0000007, -2.9802322e-08, -0.7128574, 5.9604645e-08, 0.7013092, -1.8752012, 5.9084415, -1.6030788)
 pixel_size = 0.05
-text = "鎴块棿3
-"
+text = "房间3"
 
 [node name="player" parent="." unique_id=305596649 node_paths=PackedStringArray("camera") instance=ExtResource("6_player")]
 camera = NodePath("../mainCamera3D")
@@ -146,4 +146,5 @@ transform = Transform3D(0.7071068, -0.24184474, 0.66446304, 0, 0.9396926, 0.3420
 keep_aspect = 0
 current = true
 size = 20.0
+
 
