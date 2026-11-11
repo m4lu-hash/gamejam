@@ -23,6 +23,7 @@ func _hide_hud() -> void:
 		hud.visible = false
 	var start_btn := get_node_or_null("Panel/Buttons/StartButton") as Button
 	var quit_btn := get_node_or_null("Panel/Buttons/QuitButton") as Button
+	assert(start_btn != null and quit_btn != null, "MainMenu: StartButton/QuitButton node missing")
 	if start_btn != null:
 		start_btn.pressed.connect(_on_start)
 	if quit_btn != null:

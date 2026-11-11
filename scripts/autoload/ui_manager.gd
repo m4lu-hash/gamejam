@@ -71,10 +71,12 @@ func open_inspect(item: ItemData) -> void:
 		DialogueManager.stop()
 	var view := inspect()
 	if view != null and view.has_method("open"):
-		view.call("open", item)
-		var h := hud()
-		if h != null:
-			h.visible = false
+		_when_ready(view, func() -> void:
+			view.call("open", item)
+			var h := hud()
+			if h != null:
+				h.visible = false
+		)
 
 
 ## 打开/关闭背包
@@ -98,7 +100,10 @@ func show_dialogue(id: StringName, blocking := true) -> bool:
 		return false
 	if "blocking" in box:
 		box.set("blocking", blocking)
-	return DialogueManager.start(id)
+	_when_ready(box, func() -> void:
+		DialogueManager.start(id)
+	)
+	return true
 
 
 ## HUD：目标文字
@@ -127,3 +132,13 @@ func _ensure(path: String) -> CanvasLayer:
 	# 用 deferred：启动/切场景时 root 正在 setup children，直接 add_child 会失败
 	get_tree().root.add_child.call_deferred(inst)
 	return inst as CanvasLayer
+
+
+## 节点可能还没真正进树（deferred add），等 ready 后再执行
+func _when_ready(inst: CanvasLayer, callback: Callable) -> void:
+	if inst == null:
+		return
+	if inst.is_inside_tree():
+		callback.call()
+	else:
+		inst.ready.connect(callback, CONNECT_ONE_SHOT)

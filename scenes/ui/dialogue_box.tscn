@@ -101,10 +101,14 @@ Button/styles/hover = SubResource("StyleBoxFlat_btn_hover")
 Button/styles/normal = SubResource("StyleBoxFlat_btn_normal")
 Button/styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 
-[node name="DialogueBox" type="CanvasLayer"]
+[node name="DialogueBox" type="CanvasLayer" node_paths=PackedStringArray("speaker_label", "text_label", "continue_label", "choices_box")]
 visible = false
 layer = 90
 process_mode = 3
+speaker_label = NodePath("Panel/Layout/Speaker")
+text_label = NodePath("Panel/Layout/Text")
+continue_label = NodePath("Panel/Layout/Continue")
+choices_box = NodePath("Panel/Layout/Choices")
 script = ExtResource("1_dialogue")
 
 [node name="Panel" type="PanelContainer" parent="."]

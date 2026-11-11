@@ -19,6 +19,18 @@ signal closed
 @export_range(1.0, 89.0, 1.0) var max_pitch_degrees: float = 60.0
 
 ## 当前展示的物品
+@export var viewport_container: SubViewportContainer
+@export var sub_viewport: SubViewport
+@export var camera: Camera3D
+@export var key_light: OmniLight3D
+@export var fill_light: OmniLight3D
+@export var model_root: Node3D
+@export var name_label: Label
+@export var desc_label: RichTextLabel
+@export var close_button: Button
+
+var _refs: Array = []
+
 var _item: ItemData
 ## 基础缩放（ItemData.inspect_scale）与滚轮缩放叠加
 var _base_scale: float = 1.0
@@ -32,23 +44,17 @@ var _has_model: bool = false
 var _fit_radius: float = 1.0
 var _paused_by_me := false
 
-@onready var _viewport_container: SubViewportContainer = $ViewportContainer
-@onready var _sub_viewport: SubViewport = $ViewportContainer/SubViewport
-@onready var _camera: Camera3D = $ViewportContainer/SubViewport/Camera3D
-@onready var _key_light: OmniLight3D = $ViewportContainer/SubViewport/KeyLight
-@onready var _fill_light: OmniLight3D = $ViewportContainer/SubViewport/FillLight
-@onready var _model_root: Node3D = $ViewportContainer/SubViewport/ModelRoot
-@onready var _name_label: Label = $InfoPanel/InfoVBox/NameLabel
-@onready var _desc_label: RichTextLabel = $InfoPanel/InfoVBox/DescriptionLabel
-@onready var _close_button: Button = $CloseButton
 
 
 func _ready() -> void:
+	_refs = [viewport_container, sub_viewport, camera, key_light, fill_light, model_root, name_label, desc_label, close_button]
+	for i in _refs.size():
+		assert(_refs[i] != null, "InspectView: node ref %d is null, check scene bindings" % i)
 	# 暂停时依然要处理输入与渲染
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 85
-	_close_button.pressed.connect(close)
-	_sub_viewport.size_changed.connect(_on_sub_viewport_size_changed)
+	close_button.pressed.connect(close)
+	sub_viewport.size_changed.connect(_onsub_viewport_size_changed)
 	# 环境光：即使灯光位置不对，模型也不会全黑
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
@@ -58,7 +64,7 @@ func _ready() -> void:
 	env.ambient_light_energy = 0.9
 	var world_env := WorldEnvironment.new()
 	world_env.environment = env
-	_sub_viewport.add_child(world_env)
+	sub_viewport.add_child(world_env)
 	visible = false
 
 
@@ -70,8 +76,8 @@ func open(item: ItemData) -> void:
 
 	_reset_model()
 	_item = item
-	_name_label.text = item.display_name if not item.display_name.is_empty() else String(item.id)
-	_desc_label.text = item.description
+	name_label.text = item.display_name if not item.display_name.is_empty() else String(item.id)
+	desc_label.text = item.description
 	_base_scale = item.inspect_scale if item.inspect_scale > 0.0 else 1.0
 	_zoom = 1.0
 	_yaw = 0.0
@@ -84,9 +90,9 @@ func open(item: ItemData) -> void:
 		_spawn_placeholder()
 		_has_model = true
 
-	_model_root.rotation = Vector3.ZERO
+	model_root.rotation = Vector3.ZERO
 	_apply_zoom()
-	_viewport_container.visible = _has_model
+	viewport_container.visible = _has_model
 	visible = true
 	if not get_tree().paused:
 		get_tree().paused = true
@@ -99,9 +105,9 @@ func close() -> void:
 		return
 
 	_reset_model()
-	_name_label.text = ""
-	_desc_label.text = ""
-	_viewport_container.visible = false
+	name_label.text = ""
+	desc_label.text = ""
+	viewport_container.visible = false
 	visible = false
 	if _paused_by_me:
 		_paused_by_me = false
@@ -119,7 +125,7 @@ func _process(delta: float) -> void:
 	if not _has_model or _dragging:
 		return
 	_yaw += auto_spin_speed * delta
-	_model_root.rotation = Vector3(_pitch, _yaw, 0.0)
+	model_root.rotation = Vector3(_pitch, _yaw, 0.0)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -165,7 +171,7 @@ func _handle_drag(event: InputEventMouseMotion) -> void:
 	_yaw -= event.relative.x * drag_sensitivity
 	var limit := deg_to_rad(max_pitch_degrees)
 	_pitch = clampf(_pitch - event.relative.y * drag_sensitivity, -limit, limit)
-	_model_root.rotation = Vector3(_pitch, _yaw, 0.0)
+	model_root.rotation = Vector3(_pitch, _yaw, 0.0)
 	get_viewport().set_input_as_handled()
 
 
@@ -176,7 +182,7 @@ func _zoom_by(factor: float) -> void:
 
 func _apply_zoom() -> void:
 	var scale_value := maxf(_base_scale * _zoom, 0.001)
-	_model_root.scale = Vector3.ONE * scale_value
+	model_root.scale = Vector3.ONE * scale_value
 
 
 ## 实例化模型并让其 AABB 中心落在 ModelRoot 原点。
@@ -186,7 +192,7 @@ func _spawn_model(packed: PackedScene) -> bool:
 		push_warning("InspectView: model_scene 实例化失败")
 		return false
 
-	_model_root.add_child(instance)
+	model_root.add_child(instance)
 	var bounds := _get_model_bounds()
 	if bounds.has_volume() and instance is Node3D:
 		(instance as Node3D).position -= bounds.get_center()
@@ -209,7 +215,7 @@ func _spawn_placeholder() -> void:
 	var mi := MeshInstance3D.new()
 	mi.name = "Placeholder"
 	mi.mesh = mesh
-	_model_root.add_child(mi)
+	model_root.add_child(mi)
 	_frame_model(0.7)
 
 
@@ -217,8 +223,8 @@ func _spawn_placeholder() -> void:
 func _get_model_bounds() -> AABB:
 	var result := AABB()
 	var has_bounds := false
-	var to_local := _model_root.global_transform.affine_inverse()
-	for node in _model_root.find_children("*", "VisualInstance3D", true, false):
+	var to_local := model_root.global_transform.affine_inverse()
+	for node in model_root.find_children("*", "VisualInstance3D", true, false):
 		var visual := node as VisualInstance3D
 		if visual == null:
 			continue
@@ -234,23 +240,23 @@ func _get_model_bounds() -> AABB:
 ## 根据包围球半径调整相机和灯光，保证任何尺寸的模型都能完整入镜。
 func _frame_model(radius: float) -> void:
 	_fit_radius = maxf(radius, 0.05)
-	_update_camera_size()
+	_updatecamera_size()
 
 	var distance := maxf(4.0, _fit_radius * 4.0 + 2.0)
-	_camera.position = Vector3(0.0, 0.0, distance)
-	_camera.near = 0.05
-	_camera.far = distance + _fit_radius * 4.0 + 10.0
+	camera.position = Vector3(0.0, 0.0, distance)
+	camera.near = 0.05
+	camera.far = distance + _fit_radius * 4.0 + 10.0
 
 	var light_distance := maxf(2.0, _fit_radius * 3.2)
-	_key_light.position = Vector3(1.0, 1.1, 1.5).normalized() * light_distance
-	_fill_light.position = Vector3(-1.3, -0.1, 0.9).normalized() * light_distance
+	key_light.position = Vector3(1.0, 1.1, 1.5).normalized() * light_distance
+	fill_light.position = Vector3(-1.3, -0.1, 0.9).normalized() * light_distance
 	var light_range := maxf(8.0, _fit_radius * 14.0)
-	_key_light.omni_range = light_range
-	_fill_light.omni_range = light_range
+	key_light.omni_range = light_range
+	fill_light.omni_range = light_range
 
 
-func _update_camera_size() -> void:
-	var view_size := _sub_viewport.size
+func _updatecamera_size() -> void:
+	var view_size := sub_viewport.size
 	var aspect := 1.0
 	if view_size.y > 0:
 		aspect = float(view_size.x) / float(view_size.y)
@@ -259,17 +265,17 @@ func _update_camera_size() -> void:
 	var height := maxf(_fit_radius * 2.3, 0.05)
 	if aspect > 0.0 and aspect < 1.0:
 		height = maxf(height, _fit_radius * 2.3 / aspect)
-	_camera.size = height
+	camera.size = height
 
 
-func _on_sub_viewport_size_changed() -> void:
-	_update_camera_size()
+func _onsub_viewport_size_changed() -> void:
+	_updatecamera_size()
 
 
 func _reset_model() -> void:
-	for child in _model_root.get_children():
-		_model_root.remove_child(child)
+	for child in model_root.get_children():
+		model_root.remove_child(child)
 		child.queue_free()
-	_model_root.transform = Transform3D.IDENTITY
+	model_root.transform = Transform3D.IDENTITY
 	_has_model = false
 	_dragging = false

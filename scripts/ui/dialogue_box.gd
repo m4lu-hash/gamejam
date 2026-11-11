@@ -5,10 +5,13 @@ extends CanvasLayer
 const TYPEWRITER_CPS := 40.0  # 打字机速度：字/秒
 const CONTINUE_TEXT := "▼ 按 E 继续"
 
-@onready var _speaker: Label = $Panel/Layout/Speaker
-@onready var _text: RichTextLabel = $Panel/Layout/Text
-@onready var _continue: Label = $Panel/Layout/Continue
-@onready var _choices: VBoxContainer = $Panel/Layout/Choices
+
+@export var speaker_label: Label
+@export var text_label: RichTextLabel
+@export var continue_label: Label
+@export var choices_box: VBoxContainer
+
+var _refs: Array = []
 
 var _typing := false
 var _awaiting_choice := false
@@ -20,15 +23,18 @@ var _paused_by_me := false
 
 
 func _ready() -> void:
+	_refs = [speaker_label, text_label, continue_label, choices_box]
+	for i in _refs.size():
+		assert(_refs[i] != null, "DialogueBox: node ref %d is null, check scene bindings" % i)
 	# 暂停时 UI 仍要处理输入与 Tween
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 90
 	visible = false
-	_continue.text = CONTINUE_TEXT
-	_continue.visible = false
-	_choices.visible = false
+	continue_label.text = CONTINUE_TEXT
+	continue_label.visible = false
+	choices_box.visible = false
 	DialogueManager.line_started.connect(_on_line_started)
-	DialogueManager.choices_shown.connect(_on_choices_shown)
+	DialogueManager.choices_shown.connect(_onchoices_box_shown)
 	DialogueManager.dialogue_finished.connect(_on_dialogue_finished)
 
 
@@ -47,9 +53,9 @@ func hide_dialogue() -> void:
 	_stop_breath()
 	_typing = false
 	_awaiting_choice = false
-	_continue.visible = false
-	_choices.visible = false
-	_clear_choices()
+	continue_label.visible = false
+	choices_box.visible = false
+	_clearchoices_box()
 	visible = false
 	if _paused_by_me:
 		_paused_by_me = false
@@ -80,21 +86,21 @@ func _on_line_started(speaker: String, text: String) -> void:
 	_kill_type_tween()
 	_stop_breath()
 	_awaiting_choice = false
-	_choices.visible = false
-	_clear_choices()
-	_speaker.text = speaker
-	_speaker.visible = not speaker.strip_edges().is_empty()
-	_text.text = text
-	_text.visible_ratio = 0.0
+	choices_box.visible = false
+	_clearchoices_box()
+	speaker_label.text = speaker
+	speaker_label.visible = not speaker.strip_edges().is_empty()
+	text_label.text = text
+	text_label.visible_ratio = 0.0
 	_typing = true
-	var count := _text.get_total_character_count()
+	var count := text_label.get_total_character_count()
 	if count <= 0:
 		_finish_typing()
 		return
 	_type_tween = create_tween()
 	# 游戏暂停时 Tween 仍然运行
 	_type_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	_type_tween.tween_property(_text, "visible_ratio", 1.0, float(count) / TYPEWRITER_CPS).from(0.0)
+	_type_tween.tween_property(text_label, "visible_ratio", 1.0, float(count) / TYPEWRITER_CPS).from(0.0)
 	_type_tween.finished.connect(_finish_typing)
 
 
@@ -102,20 +108,20 @@ func _on_line_started(speaker: String, text: String) -> void:
 func _finish_typing() -> void:
 	_typing = false
 	_kill_type_tween()
-	_text.visible_ratio = 1.0
-	_update_continue()
+	text_label.visible_ratio = 1.0
+	_updatecontinue_label()
 
 
-func _on_choices_shown(options: Array) -> void:
+func _onchoices_box_shown(options: Array) -> void:
 	show_dialogue()
 	_typing = false
 	_kill_type_tween()
-	_text.visible_ratio = 1.0
+	text_label.visible_ratio = 1.0
 	_awaiting_choice = true
-	_continue.visible = false
+	continue_label.visible = false
 	_stop_breath()
-	_clear_choices()
-	_choices.visible = true
+	_clearchoices_box()
+	choices_box.visible = true
 	for i in options.size():
 		var label := "……"
 		var item: Variant = options[i]
@@ -128,10 +134,10 @@ func _on_choices_shown(options: Array) -> void:
 		btn.focus_mode = Control.FOCUS_ALL
 		btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		btn.pressed.connect(_on_choice_pressed.bind(i))
-		_choices.add_child(btn)
+		choices_box.add_child(btn)
 	# 键盘玩家可以直接用上下键选择、空格/回车确认
-	if _choices.get_child_count() > 0:
-		var first := _choices.get_child(0) as Button
+	if choices_box.get_child_count() > 0:
+		var first := choices_box.get_child(0) as Button
 		if first != null:
 			first.grab_focus()
 
@@ -148,9 +154,9 @@ func _on_dialogue_finished(_id: StringName) -> void:
 
 
 ## “继续”提示的呼吸闪烁
-func _update_continue() -> void:
+func _updatecontinue_label() -> void:
 	var should_show := visible and not _typing and not _awaiting_choice
-	_continue.visible = should_show
+	continue_label.visible = should_show
 	if should_show:
 		_start_breath()
 	else:
@@ -160,18 +166,18 @@ func _update_continue() -> void:
 func _start_breath() -> void:
 	if _breath_tween != null and _breath_tween.is_valid():
 		return
-	_continue.modulate.a = 1.0
+	continue_label.modulate.a = 1.0
 	_breath_tween = create_tween().set_loops()
 	_breath_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	_breath_tween.tween_property(_continue, "modulate:a", 0.35, 0.55).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_breath_tween.tween_property(_continue, "modulate:a", 1.0, 0.55).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_breath_tween.tween_property(continue_label, "modulate:a", 0.35, 0.55).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_breath_tween.tween_property(continue_label, "modulate:a", 1.0, 0.55).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 func _stop_breath() -> void:
 	if _breath_tween != null and _breath_tween.is_valid():
 		_breath_tween.kill()
 	_breath_tween = null
-	_continue.modulate.a = 1.0
+	continue_label.modulate.a = 1.0
 
 
 func _kill_type_tween() -> void:
@@ -180,7 +186,7 @@ func _kill_type_tween() -> void:
 	_type_tween = null
 
 
-func _clear_choices() -> void:
-	for child in _choices.get_children():
-		_choices.remove_child(child)
+func _clearchoices_box() -> void:
+	for child in choices_box.get_children():
+		choices_box.remove_child(child)
 		child.queue_free()

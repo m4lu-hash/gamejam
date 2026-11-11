@@ -12,6 +12,7 @@ func _ready() -> void:
 	layer = 70
 	_objective = get_node_or_null("Objective") as Label
 	_toast = get_node_or_null("Toast") as Label
+	assert(_objective != null and _toast != null, "HUD: Objective/Toast node missing")
 	if _toast != null:
 		_toast.modulate.a = 0.0
 	if not _pending_objective.is_empty() and _objective != null:

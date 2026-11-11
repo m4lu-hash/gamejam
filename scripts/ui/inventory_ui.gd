@@ -20,6 +20,7 @@ var _confirming := false
 var _confirm_item: ItemData = null
 var _warning_serial := 0
 var _paused_by_me := false
+var _refs: Array = []
 
 var _item_list: ItemList
 var _empty_label: Label
@@ -45,6 +46,10 @@ func _ready() -> void:
 	_use_button = get_node_or_null(USE_BUTTON_PATH) as Button
 	_cancel_button = get_node_or_null(CANCEL_BUTTON_PATH) as Button
 	_warning_label = get_node_or_null(WARNING_PATH) as Label
+
+	_refs = [_item_list, _empty_label, _icon, _item_name, _description, _use_button, _cancel_button, _warning_label]
+	for i in _refs.size():
+		assert(_refs[i] != null, "InventoryUI: node ref %d is null, check scene paths" % i)
 
 	if _item_list != null:
 		_item_list.item_selected.connect(_on_item_selected)

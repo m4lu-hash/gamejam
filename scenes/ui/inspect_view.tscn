@@ -18,10 +18,19 @@ corner_radius_top_right = 14
 corner_radius_bottom_right = 14
 corner_radius_bottom_left = 14
 
-[node name="InspectView" type="CanvasLayer"]
+[node name="InspectView" type="CanvasLayer" node_paths=PackedStringArray("viewport_container", "sub_viewport", "camera", "key_light", "fill_light", "model_root", "name_label", "desc_label", "close_button")]
 process_mode = 3
 layer = 85
 visible = false
+viewport_container = NodePath("ViewportContainer")
+sub_viewport = NodePath("ViewportContainer/SubViewport")
+camera = NodePath("ViewportContainer/SubViewport/Camera3D")
+key_light = NodePath("ViewportContainer/SubViewport/KeyLight")
+fill_light = NodePath("ViewportContainer/SubViewport/FillLight")
+model_root = NodePath("ViewportContainer/SubViewport/ModelRoot")
+name_label = NodePath("InfoPanel/InfoVBox/NameLabel")
+desc_label = NodePath("InfoPanel/InfoVBox/DescriptionLabel")
+close_button = NodePath("CloseButton")
 script = ExtResource("1_inspect")
 
 [node name="Backdrop" type="ColorRect" parent="."]
