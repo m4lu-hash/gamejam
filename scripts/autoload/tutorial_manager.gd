@@ -18,6 +18,11 @@ func start() -> void:
 		return
 	if _step != 0:
 		return
+	# 玩家如果已经自己把关键谜题做了，直接视为教程完成
+	if GameState.has_flag(&"cabinet_opened") or GameState.has_flag(&"key_taken"):
+		GameState.set_flag(&"tutorial_seen", true)
+		UIManager.set_objective("")
+		return
 	_step = 1
 	UIManager.set_objective("先听他们说两句")
 	UIManager.show_dialogue(&"intro_prank", false)  # 旁白不暂停，玩家可以边走边听
@@ -57,18 +62,20 @@ func _process(_delta: float) -> void:
 				UIManager.set_objective("回到书桌，按 E 检视台灯")
 				UIManager.toast("走近台灯，按 E 检视，可以拖动看灯底", 4.0)
 		4:
-			if GameState.has_flag(&"tutorial_inspected"):
+			# 玩家可能跳过检视，直接去拿纸条/开柜子
+			if GameState.has_flag(&"tutorial_inspected") or Inventory.has_item(&"paper") or GameState.has_flag(&"cabinet_opened"):
 				_step = 5
 				UIManager.set_objective("捡起桌上的纸条（按 E）")
 				UIManager.toast("桌上有一张纸条，按 E 捡起来", 4.0)
 		5:
-			if Inventory.has_item(&"paper"):
+			if Inventory.has_item(&"paper") or GameState.has_flag(&"cabinet_opened"):
 				_step = 6
 				UIManager.set_objective("按 I 打开背包")
 				UIManager.toast("按 I 打开背包，看看刚捡到的纸条", 3.5)
 		6:
 			var ui := UIManager.inventory()
-			if ui != null and ui.has_method("is_open") and bool(ui.call("is_open")):
+			var opened := ui != null and ui.has_method("is_open") and bool(ui.call("is_open"))
+			if opened or GameState.has_flag(&"cabinet_opened"):
 				_step = 7
 				UIManager.set_objective("选中纸条点「使用」，再走到文件柜按 E")
 				UIManager.toast("选中纸条点「使用」（要点两次确认），然后去文件柜按 E", 5.0)
@@ -76,7 +83,8 @@ func _process(_delta: float) -> void:
 			if GameState.has_flag(&"cabinet_opened"):
 				_step = 8
 				GameState.set_flag(&"tutorial_seen", true)
-				UIManager.set_objective("找到逃出去的办法")
+				# 清空小任务，交给 QuestManager 显示实时目标
+				UIManager.set_objective("")
 				UIManager.toast("干得漂亮。接下来，靠你自己了。", 4.0)
 
 
