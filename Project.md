@@ -492,3 +492,23 @@ use_button = NodePath("Panel/UseButton")
   （`UIManager._when_ready()` 已处理）；
 - 暂停栈：打开 UI 时记录是不是自己暂停的（`_paused_by_me`），关闭时只恢复自己暂停的那次，
   避免背包/检视/对话互相覆盖 `paused`。
+
+
+---
+
+## 音频素材（`Assets/audio/`）
+
+队友提供的原始文件（`E:\QQ\download\1113`）已转成 OGG Vorbis（q4）并入库，总体积 210MB → 约 7.4MB。
+
+| 文件 | 时长 | 用途 | 备注 |
+| --- | --- | --- | --- |
+| `ambience/corridor.ogg` | 8:50 | 走廊环境音 | 原 4 声道已下混为立体声 48kHz |
+| `ambience/room_background.ogg` | 10s | 房间白噪音 | 循环播放 |
+| `monster/monster_show.ogg` | 33s | 怪物登场 | 剧情用 |
+| `sfx/door_opening.ogg` | 0.65s | 开门 | |
+| `sfx/cabinet_open.ogg` / `cabinet_close.ogg` | 1.02s | 柜子开关 | |
+| `sfx/jumpscare.ogg` | 23s | 跳脸杀 | 配合 `跳脸图片.jpg` |
+| `sfx/mouse_click.ogg` | 0.24s | UI 点击 | 接按钮/列表 |
+
+> 原始素材目录还包含 `gamejam.docx`（剧情/玩法设计）和 `任务表.xls`（待办列表）。
+> `corridor.wav` 原始为 4 声道（MixPre-6 录音），Godot 环境音按立体声处理更稳，因此入库的是下混后的 stereo 版。
