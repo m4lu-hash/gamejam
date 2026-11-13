@@ -20,6 +20,9 @@ radius = 1.2
 [sub_resource type="SphereShape3D" id="SphereShape3D_key"]
 radius = 0.9
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_table"]
+size = Vector3(1.4, 0.8, 0.9)
+
 [sub_resource type="Environment" id="Environment_nq0ms"]
 ambient_light_source = 2
 ambient_light_color = Color(0.100329734, 0.08839286, 0.19186223, 1)
@@ -177,6 +180,12 @@ transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -1.6, 0.9, -1.0)
 
 [node name="Table" parent="." instance=ExtResource("19_table")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 0, -1.0)
+
+[node name="TableCollision" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 0.45, -1.0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TableCollision"]
+shape = SubResource("BoxShape3D_table")
 
 [node name="BronzeKeyInteract" type="Area3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 0.6, -1.0)

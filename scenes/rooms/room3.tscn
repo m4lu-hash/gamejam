@@ -26,6 +26,9 @@ emission_energy_multiplier = 2.0
 [sub_resource type="BoxShape3D" id="BoxShape3D_scare"]
 size = Vector3(1.6, 2.3, 2.2)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_table"]
+size = Vector3(1.4, 0.8, 0.9)
+
 [sub_resource type="SphereShape3D" id="SphereShape3D_key"]
 radius = 0.9
 
@@ -210,6 +213,12 @@ transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 1.0, 0.9, 1.0)
 
 [node name="Table" parent="." instance=ExtResource("19_table")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 0, 1.0)
+
+[node name="TableCollision" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 0.45, 1.0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TableCollision"]
+shape = SubResource("BoxShape3D_table")
 
 [node name="NextFloorKeyInteract" type="Area3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 1.2, 1.0)
