@@ -101,6 +101,11 @@ func _on_caught() -> void:
 	UIManager.play_jumpscare()
 	await get_tree().create_timer(RESPAWN_DELAY, true).timeout
 	UIManager.hide_jumpscare()
+	# 跳脸声太长：复活时淡出掉
+	var audio := get_node_or_null("/root/AudioManager")
+	if audio != null and audio.has_method("fade_out_sfx"):
+		audio.call("fade_out_sfx", &"jumpscare", 0.6)
+		audio.call("stop_sfx", &"monster_show")
 	get_tree().paused = false
 	SaveManager.respawn_at_checkpoint()
 	if monster != null and is_instance_valid(monster):

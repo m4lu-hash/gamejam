@@ -195,3 +195,15 @@ func stop_sfx(sfx_name: StringName) -> void:
 func stop_all_sfx() -> void:
 	for player in _sfx_players:
 		player.stop()
+
+## 带淡出停止某个音效（用于跳脸声太长的情况）
+func fade_out_sfx(sfx_name: StringName, duration := 0.8) -> void:
+	var stream: AudioStream = _streams.get(sfx_name)
+	if stream == null:
+		return
+	for player in _sfx_players:
+		if not player.playing or player.stream != stream:
+			continue
+		var tw := player.create_tween()
+		tw.tween_property(player, "volume_db", -60.0, duration)
+		tw.tween_callback(player.stop)

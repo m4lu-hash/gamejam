@@ -217,12 +217,13 @@ func try_unlock(key: ItemData) -> bool:
 	# 记录到全局 flag：房间重载后 _ready 会把 locked 恢复成 false，不再重复开锁
 	if lock_id != &"":
 		GameState.set_flag(_unlocked_flag_id(), true)
+	# 开锁对话用非阻塞模式，避免暂停导致门不开、玩家动不了
+	if unlock_dialogue_id != &"":
+		UIManager.show_dialogue(unlock_dialogue_id, false)
 	# 开门提示立刻消失，不等下一次 _physics_process
 	if _lock_prompt != null:
 		_lock_prompt.visible = false
 		_lock_prompt.text = ""
-	if unlock_dialogue_id != &"":
-		UIManager.show_dialogue(unlock_dialogue_id)
 	return true
 
 
