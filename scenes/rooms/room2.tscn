@@ -1,4 +1,4 @@
-﻿[gd_scene format=3 uid="uid://ctb1op7mvyxgq"]
+[gd_scene format=3 uid="uid://booofuc30xoui"]
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_o70tu"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://shaders/level_blur.gdshader" id="2_08gkj"]
@@ -9,7 +9,7 @@
 [sub_resource type="Environment" id="Environment_nq0ms"]
 ambient_light_source = 2
 ambient_light_color = Color(0.100329734, 0.08839286, 0.19186223, 1)
-ambient_light_energy = 1.99
+ambient_light_energy = 0.38
 volumetric_fog_enabled = true
 volumetric_fog_density = 0.0
 
@@ -42,7 +42,7 @@ environment = SubResource("Environment_nq0ms")
 [node name="KeyLight" type="OmniLight3D" parent="Environment" unique_id=1828467744]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.049096584, 2.0247307, -0.02704525)
 light_color = Color(0.78153324, 0.8302539, 0.99999875, 1)
-light_energy = 0.734
+light_energy = 0.0
 light_indirect_energy = 1.039
 light_volumetric_fog_energy = 1.902
 light_size = 10.0
@@ -58,7 +58,7 @@ material = SubResource("FogMaterial_beyeo")
 mesh_library = ExtResource("1_o70tu")
 cell_size = Vector3(4, 0.1, 4)
 data = {
-"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 0, 65534, 0, 65535, 65534, 0, 65534, 65535, 0, 65534, 0, 0)
+"cells": PackedInt32Array(65535, 0, 0, 0, 0, 0, 0, 65534, 0, 65535, 65534, 0, 65535, 65535, 0, 0, 65535, 0)
 }
 
 [node name="Backdrop" type="MeshInstance3D" parent="Geometry" unique_id=403867501]
@@ -123,8 +123,8 @@ shape = SubResource("BoxShape3D_door_z")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.2)
 
 [node name="RoomLabel" type="Label3D" parent="." unique_id=1644782252]
-visible = false
 transform = Transform3D(0.70130914, 5.9604645e-08, 0.7128576, 1.1641532e-09, 1.0000007, -2.9802322e-08, -0.7128574, 5.9604645e-08, 0.7013092, -1.8752012, 5.9084415, -1.6030788)
+visible = false
 pixel_size = 0.05
 text = "房间2"
 
@@ -133,8 +133,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6504989, 0, 0)
 camera = NodePath("../mainCamera3D")
 
 [node name="mainCamera3D" type="Camera3D" parent="." unique_id=1040313077]
-transform = Transform3D(0.7071068, -0.24184474, 0.66446304, 0, 0.9396926, 0.34202012, -0.7071068, -0.24184474, 0.66446304, 8, 6.6000147, 8)
+transform = Transform3D(0.7071068, -0.24184474, 0.66446304, 0, 0.9396926, 0.34202012, -0.7071068, -0.24184474, 0.66446304, 13, 9.41, 13)
 keep_aspect = 0
 current = true
 size = 20.0
 
+[node name="SpotLight3D" type="SpotLight3D" parent="." unique_id=738619389]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, -2.3044462, 3.4608886, -2.4528441)
+light_energy = 2.479
+spot_range = 4.347

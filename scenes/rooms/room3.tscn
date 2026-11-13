@@ -1,4 +1,4 @@
-﻿[gd_scene format=3 uid="uid://04s07e371ha1"]
+[gd_scene format=3 uid="uid://blnwi7xn2ywmr"]
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_htvxh"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://shaders/level_blur.gdshader" id="2_vddjn"]
@@ -63,7 +63,7 @@ material = SubResource("FogMaterial_cc7fx")
 mesh_library = ExtResource("1_htvxh")
 cell_size = Vector3(4, 0.1, 4)
 data = {
-"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 65534, 65535, 0, 65534, 0, 0, 0, 65534, 0)
+"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 65534, 65535, 0, 65534, 0, 0)
 }
 
 [node name="FloorPlane" type="MeshInstance3D" parent="Geometry" unique_id=1669693501]
@@ -133,8 +133,8 @@ shape = SubResource("BoxShape3D_door_x")
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -2.2, 0, 0)
 
 [node name="RoomLabel" type="Label3D" parent="." unique_id=1481211202]
-visible = false
 transform = Transform3D(0.70130914, 5.9604645e-08, 0.7128576, 1.1641532e-09, 1.0000007, -2.9802322e-08, -0.7128574, 5.9604645e-08, 0.7013092, -1.8752012, 5.9084415, -1.6030788)
+visible = false
 pixel_size = 0.05
 text = "房间3"
 
@@ -142,9 +142,7 @@ text = "房间3"
 camera = NodePath("../mainCamera3D")
 
 [node name="mainCamera3D" type="Camera3D" parent="." unique_id=269160623]
-transform = Transform3D(0.7071068, -0.24184474, 0.66446304, 0, 0.9396926, 0.34202012, -0.7071068, -0.24184474, 0.66446304, 8, 6.6000147, 8)
+transform = Transform3D(0.7071068, -0.24184474, 0.66446304, 0, 0.9396926, 0.34202012, -0.7071068, -0.24184474, 0.66446304, 13, 9.41, 13)
 keep_aspect = 0
 current = true
 size = 20.0
-
-

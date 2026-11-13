@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://bjcvwlirbaycn"]
+[gd_scene format=4 uid="uid://bjcvwlirbaycn"]
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_u52ul"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://shaders/level_blur.gdshader" id="4_0b4ue"]
@@ -12,8 +12,8 @@
 [ext_resource type="PackedScene" uid="uid://bj15j7iefc5oq" path="res://OFFICE/OFFICE/computers/TV.glb" id="10_v5j5c"]
 [ext_resource type="PackedScene" uid="uid://blvhevayj5pye" path="res://PSX-Derelict-Furniture-Standard/glb/fridge.glb" id="11_aicyk"]
 [ext_resource type="PackedScene" uid="uid://mtsy13i6rbtf" path="res://scenes/doors/door_leaf.tscn" id="11_doorleaf"]
-[ext_resource type="PackedScene" uid="uid://f7iwixyl1x5v" path="res://PSX-Derelict-Furniture-Standard/glb/mattress.glb" id="12_8b0r0"]
 [ext_resource type="Script" uid="uid://c7krn8r3e75uk" path="res://scripts/rooms/interactable.gd" id="13_interact"]
+[ext_resource type="Texture2D" uid="uid://ba62dcj0cju17" path="res://PSX-Derelict-Furniture-Standard/glb/mattress_mattress256x256.png" id="14_lwipn"]
 [ext_resource type="PackedScene" path="res://scenes/ui/main_menu.tscn" id="14_menu"]
 [ext_resource type="PackedScene" uid="uid://h163gv51pbcc" path="res://OFFICE/OFFICE/extras/circular_desklamp.glb" id="15_lamp"]
 [ext_resource type="PackedScene" uid="uid://dte04qlkjkfpy" path="res://OFFICE/OFFICE/stationary/paper_single_sheet.glb" id="16_paper"]
@@ -25,8 +25,8 @@
 
 [sub_resource type="Environment" id="Environment_vkqoe"]
 ambient_light_source = 2
-ambient_light_color = Color(0.100329734, 0.08839286, 0.19186223, 1)
-ambient_light_energy = 0.77
+ambient_light_color = Color(0.08368001, 0.073599994, 0.16, 1)
+ambient_light_energy = 0.79
 volumetric_fog_enabled = true
 volumetric_fog_density = 0.0
 
@@ -58,6 +58,47 @@ size = Vector3(1.4, 2.3, 0.6928894)
 [sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
 radius = 1.0
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wrux1"]
+resource_name = "Mattress"
+cull_mode = 2
+albedo_texture = ExtResource("14_lwipn")
+texture_filter = 2
+metadata/_gltf_primary_texture_coord = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_4mpeu"]
+_surfaces = [{
+"aabb": AABB(-0.912, 0, -0.532, 1.824, 0.15200001, 1.064),
+"format": 34896613377,
+"index_count": 132,
+"index_data": PackedByteArray("CwAMAA0ACgANAAwACgAOAA0ACgAMAAEADQAOAA8ADQAPAAsAAAAOAAoAAAAKAAEAEAAPAA4AAAARAA4AEAAOABEABQALAA8ABQAPABAAAwALAAUAAwASAAsACwASAAwABAADAAUABQAQAAYABAAFAAYABgAQABMAEQATABAABgAIAAQABgATAAgAEQAHABMACAATAAcAAAAHABEABAAUAAMAAwAUABIABAAIABUABAAVABQACAAHABYAFgAVAAgAAgAHAAAAAgAWAAcAAAABAAIAFgAJABUAAgAJABYAFAAVAAkAAQAJAAIAFAAJABcAAQAXAAkAEgAUABcADAAXAAEAEgAXAAwA"),
+"lods": [0.29092994, PackedByteArray("AAABAAIAAgAHAAAAAgAIAAcAAAAHAAYABgAHAAgAAgAJAAgAAQAJAAIABgAIAAQABAAIAAkAAAAGAAoAAAAKAAEABAAFAAYABQAKAAYABAAJAAMABAADAAUAAQADAAkABQALAAoAAwALAAUACgAMAAEADAADAAEACgALAAwAAwAMAAsA"), 1.7060872, PackedByteArray("AAABAAIAAQADAAIAAgAEAAAABAACAAMAAwABAAUAAAAFAAEABAADAAUAAAAGAAUABAAFAAYABgAAAAQA")],
+"name": "Mattress",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("qvr//yIJAABUBf//3PYAAFQF//8iCQAAVAUAANz2AABUBQAAIgkAAKr6AADc9gAAqvoAACIJAACq+gvAAAAAAFQF8z8AAAAAAAALwCIJAACq+v//3PYAAKr68z///wAAVAULwP//AACq+gvA//8AAP//C8Dc9gAA///zP9z2AAD///M/IgkAAP//C8AiCQAAVAXzP///AACq+vM/AAAAAAAA8z/c9gAAAADzPyIJAABUBQvAAAAAAAAAC8Dc9gAA")
+}]
+blend_shape_mode = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_u11sa"]
+resource_name = "mattress_Cube_001"
+_surfaces = [{
+"aabb": AABB(-0.912, 0, -0.532, 1.824, 0.15200001, 1.064),
+"attribute_data": PackedByteArray("/xX/f//T/xP/0/9//xUAAP/TAAD/0/+T/xX/k/8V////Af+T/9P////n/5P/5////xX/E/8X/4X/0f8N/xf/Bf/R/43/2P+E/wH////h/5P/F/8N/xD/BP8Q/w7/2P8O/9H/Bf/Y/wT/EP+E/9H/hf/Y/47/F/+O/xD/jv8P/5P/D////9n///8H////2f+T/wf/k//h//8="),
+"format": 34896613399,
+"index_count": 132,
+"index_data": PackedByteArray("DwAOABQAFAAVAA8AFAAWABUAAwAPABUADAAWABQADAAUAA4ABAAPAAMADAAOAAEAAAAMAAEADgAXAAEAAAABAAIADwAYAA4ABAAYAA8AGAAXAA4ABAAZABgAGAAZABcAAgANAAAAAAANABoAAgAbAA0AAgARABsAGwARABwAGwAcABAAEAANABsABQAQABwAGgANAB0AEAAdAA0AGgAdAB4ABgAeAB0ABgAdABAABgAQAAUABQAHAAYABwAfAAYABQAJAAcABwAgAB8ABQAhAAkAHwAgACIABQAjACEAHwAiACQACAAkACIACAAiABIAIQAjABMAIQATACUACwAlABMACwATAAoA"),
+"lods": [0.29092994, PackedByteArray("AAABAAIAAAAMAAEAAgANAAAADAAOAAEADgAEAAEADAAPAA4ABAAOAA8AAwAPAAwABAAPAAMAAAANAAYAAgAQAA0ABgANABAAAgARABAABQAQABEABgAQAAUACAAGABIABwASAAYABQAHAAYABQAJAAcABQATAAkACwAJABMACwATAAoA"), 1.7060872, PackedByteArray("AAABAAIAAAADAAEABAABAAMAAgAFAAAABgAAAAUABQAHAAYACAAGAAcABQAJAAcABQAKAAkACwAJAAoA")],
+"material": SubResource("StandardMaterial3D_wrux1"),
+"name": "Mattress",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 38,
+"vertex_data": PackedByteArray("qvr//yIJEvFUBf//3Pa6/FQF//8iCRLxqvoAANz2pf9UBQAA3Pal/1QFAAAiCbvzqvoAACIJRfOq+gAA3PZQ86r6//8iCY7OVAUAANz2UPNUBf//IgmOzlQF///c9pa1qvr//9z2uvyq+gvAAACf8VQFC8D//1P/qvrzP///U/9UBfM/AACs8QAAC8AiCafSqvr//9z2lrUAAAvAIgnp16r6C8D//wH////zP9z2xP///wvA3PYJ/gAAC8Dc9sT/VAXzP///Af8AAPM/3PYJ/v//C8AiCWDSVAULwAAAXfEAAPM/Igkc0qr68z8AAAPx///zPyIJLtH///M/Ign05P//8z/c9iHZAADzP9z2Idn//wvA3PZBwwAA8z8iCfTk//8LwCIJ6dcAAAvA3PZBw6tKqQPncBitVnyryuCQD1QP1B7varhD+AyH5jcBie5OAt+vZu7O/Pav5vugUPaeqRktGA+7a4wADm86kfCQxG6flBf/HH044mDWUXbV16jETJHekLSrxW5DEggrSlQ5kbJuIG+77fbU32OhAViBV+tvmqX/EHxwFmx7PhuApBBKPpwMVwzXwOMWsNReD8p921W71lfT3ujP")
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_4mpeu")
+
 [sub_resource type="BoxMesh" id="BoxMesh_vkqoe"]
 size = Vector3(1, 1.6, 1)
 
@@ -79,6 +120,7 @@ environment = SubResource("Environment_vkqoe")
 
 [node name="KeyLight" type="OmniLight3D" parent="Environment" unique_id=884022658]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.049096584, 3.2066557, -0.02704525)
+visible = false
 light_color = Color(0.78153324, 0.8302539, 0.99999875, 1)
 light_energy = 0.734
 light_indirect_energy = 1.039
@@ -97,7 +139,7 @@ material = SubResource("FogMaterial_vkqoe")
 mesh_library = ExtResource("1_u52ul")
 cell_size = Vector3(4, 0.1, 4)
 data = {
-"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 0, 65534, 0, 65535, 65534, 0, 65534, 0, 0, 65534, 65535, 0)
+"cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 0, 65534, 0, 65535, 65534, 0)
 }
 
 [node name="FloorPlane" type="MeshInstance3D" parent="Geometry" unique_id=450198660]
@@ -179,7 +221,7 @@ text = "房间1"
 camera = NodePath("../mainCamera3D")
 
 [node name="mainCamera3D" type="Camera3D" parent="." unique_id=954971694]
-transform = Transform3D(0.7071068, -0.24184474, 0.66446304, 0, 0.9396926, 0.34202012, -0.7071068, -0.24184474, 0.66446304, 8, 6.6000147, 8)
+transform = Transform3D(0.7071068, -0.24184474, 0.66446304, 0, 0.9396926, 0.34202012, -0.7071068, -0.24184474, 0.66446304, 13, 9.416744, 13.051)
 keep_aspect = 0
 current = true
 size = 20.0
@@ -223,8 +265,14 @@ shape = SubResource("SphereShape3D_interact")
 [node name="fridge" parent="." unique_id=756377785 instance=ExtResource("11_aicyk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3653133, 0.054859042, 0.70072865)
 
-[node name="mattress" parent="." unique_id=579004148 instance=ExtResource("12_8b0r0")]
+[node name="mattress" type="Node3D" parent="." unique_id=579004148]
 transform = Transform3D(-0.61818, 0, 2.2948968, 0, 1, 0, -1.7854807, 0, -0.7945531, 1.7126665, 0.04938948, -1.79362)
+
+[node name="Mattress" type="MeshInstance3D" parent="mattress" unique_id=1678585986]
+visible = false
+mesh = SubResource("ArrayMesh_u11sa")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="mattress/Mattress" unique_id=101383737]
 
 [node name="AreaLight3D" type="AreaLight3D" parent="." unique_id=112005015]
 transform = Transform3D(0.69545966, 0, 0.7185651, 0, 1, 0, -0.7185651, 0, 0.69545966, 2.7541254, 1.0130554, 2.8307676)
@@ -246,8 +294,10 @@ shape = SubResource("BoxShape3D_desk")
 
 [node name="MattressCollision" type="StaticBody3D" parent="." unique_id=316451816]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7126665, 0.18, -1.79362)
+visible = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MattressCollision" unique_id=785114143]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15676785, 0)
 shape = SubResource("BoxShape3D_mattress")
 
 [node name="DeskSit" type="Marker3D" parent="." unique_id=1106047797]
@@ -309,3 +359,10 @@ swap_scene = ExtResource("18_cabinet_open")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CabinetInteract" unique_id=431191539]
 shape = SubResource("SphereShape3D_interact")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=592371171]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.921109, 0)
+light_energy = 5.639
+light_indirect_energy = 0.933
+omni_range = 6.386
+omni_attenuation = 2.429
