@@ -1,4 +1,4 @@
-﻿[gd_scene format=4 uid="uid://bjcvwlirbaycn"]
+[gd_scene format=4 uid="uid://bjcvwlirbaycn"]
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_u52ul"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://shaders/level_blur.gdshader" id="4_0b4ue"]

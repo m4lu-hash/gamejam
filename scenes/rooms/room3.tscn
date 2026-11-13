@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/interactable.gd" id="14_interact"]
 [ext_resource type="Resource" path="res://data/items/next_floor_key.tres" id="15_keyitem"]
 [ext_resource type="Script" path="res://scripts/rooms/scare_trigger.gd" id="16_scare"]
+[ext_resource type="Script" path="res://scripts/rooms/door_shuffler.gd" id="18_shuffler"]
 [ext_resource type="Script" uid="uid://dcutkcp54bu0j" path="res://addons/flickering_light/flickering_omni_light_3d.gd" id="17_flicker"]
 [ext_resource type="PackedScene" path="res://OFFICE/OFFICE/desks/desk1.glb" id="19_table"]
 
@@ -112,6 +113,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.81, 0)
 operation = 2
 size = Vector3(1.6, 2.3, 0.562)
 
+[node name="DoorHole2" type="CSGBox3D" parent="Geometry/DoorWall_X"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, -2.81, 0)
+operation = 2
+size = Vector3(1.6, 2.3, 0.562)
+
 [node name="Bounds" type="StaticBody3D" parent="Geometry" unique_id=1459821008]
 
 [node name="Wall_Z" type="CollisionShape3D" parent="Geometry/Bounds" unique_id=1367348588]
@@ -152,6 +158,27 @@ exit_direction = Vector3(-1, 0, 0)
 [node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToCorridor" unique_id=879797328]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.33106136, 0, 0)
 shape = SubResource("BoxShape3D_door_x")
+
+[node name="DoorLeafAlt" parent="Doors" instance=ExtResource("11_doorleaf")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, 1.7)
+
+[node name="DoorToCorridorAlt" type="Area3D" parent="Doors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 1.2, 2.5)
+script = ExtResource("5_door")
+target_scene = "res://corridor-1.tscn"
+target_spawn = "SpawnFromRoom3"
+exit_direction = Vector3(-1, 0, 0)
+
+[node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToCorridorAlt"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.33106136, 0, 0)
+shape = SubResource("BoxShape3D_door_x")
+
+[node name="DoorShuffler" type="Node" parent="." node_paths=PackedStringArray("door_a", "trigger_a", "door_b", "trigger_b")]
+script = ExtResource("18_shuffler")
+door_a = NodePath("Doors/DoorLeafLeft")
+trigger_a = NodePath("Doors/DoorToCorridor")
+door_b = NodePath("Doors/DoorLeafAlt")
+trigger_b = NodePath("Doors/DoorToCorridorAlt")
 
 [node name="Spawns" type="Node3D" parent="." unique_id=189377493]
 

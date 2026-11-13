@@ -167,6 +167,9 @@ func _nearest_door_to(target: Node3D, root: Node = null) -> Node3D:
 		if root != null and not root.is_ancestor_of(node):
 			continue
 		var door := node as Node3D
+		# 隐藏的随机门不参与"到达开门"
+		if not door.visible:
+			continue
 		var dist := door.global_position.distance_to(target.global_position)
 		if dist < best:
 			best = dist

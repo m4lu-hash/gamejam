@@ -215,6 +215,16 @@ func is_locked() -> bool:
 	return locked
 
 
+## 启用/停用整扇门（用于 room3 随机门：隐藏时不挡路、不响应）
+func set_active(active: bool) -> void:
+	visible = active
+	if _collision != null:
+		_collision.disabled = not active
+	set_physics_process(active)
+	if _lock_prompt != null:
+		_lock_prompt.visible = false
+
+
 ## 尝试用一把钥匙开锁；成功返回 true 并解除锁定。
 ## 已经解锁的门直接返回 false：调用方（door.gd）据此避免重复 toast / 重复播对话。
 func try_unlock(key: ItemData) -> bool:

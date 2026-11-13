@@ -95,6 +95,10 @@ func _blackout_step(scene: Node) -> void:
 		light.light_energy = LIGHT_ENERGY
 	_stop_sfx(&"monster_show")
 	_blackout = false
+	# 黑屏结束后随机换门（room3 有两扇门，只显示一扇）
+	var shuffler := scene.get_node_or_null("DoorShuffler")
+	if shuffler != null and shuffler.has_method("shuffle"):
+		shuffler.call("shuffle")
 
 
 func _on_caught() -> void:
