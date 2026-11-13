@@ -65,7 +65,7 @@ func _spawn_monster(scene: Node) -> void:
 
 ## 一次"熄灯黑屏"：灯闪 → 黑屏（怪物追）→ 亮灯（怪物停）
 func _blackout_step(scene: Node) -> void:
-	if _blackout:
+	if _blackout or not is_instance_valid(scene):
 		return
 	_blackout = true
 	var light := scene.get_node_or_null("ScareLight") as OmniLight3D
@@ -91,10 +91,13 @@ func _blackout_step(scene: Node) -> void:
 	if monster != null and is_instance_valid(monster) and monster.has_method("set_chasing"):
 		monster.call("set_chasing", false)
 	UIManager.fade_in(0.2)
-	if light != null and is_instance_valid(light):
-		light.light_energy = LIGHT_ENERGY
 	_stop_sfx(&"monster_show")
 	_blackout = false
+	# 黑屏期间玩家可能已经切房间，旧场景可能已被释放
+	if not is_instance_valid(scene) or scene != get_tree().current_scene:
+		return
+	if light != null and is_instance_valid(light):
+		light.light_energy = LIGHT_ENERGY
 	# 黑屏结束后随机换门（room3 有两扇门，只显示一扇）
 	var shuffler := scene.get_node_or_null("DoorShuffler")
 	if shuffler != null and shuffler.has_method("shuffle"):

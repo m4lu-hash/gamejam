@@ -33,6 +33,8 @@ func _ready() -> void:
 
 ## 用轮询代替 body_entered：玩家站在触发区里等门开够，也能触发
 func _process(_delta: float) -> void:
+	if not monitoring:
+		return
 	if _packed == null or RoomManager.is_changing:
 		return
 	for body in get_overlapping_bodies():
