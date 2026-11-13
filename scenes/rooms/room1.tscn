@@ -21,7 +21,7 @@
 [ext_resource type="PackedScene" uid="uid://cahmy4x0ccp3e" path="res://OFFICE/OFFICE/file_cabinets/file_cabinet_small_open.glb" id="18_cabinet_open"]
 [ext_resource type="Resource" path="res://data/items/desk_lamp.tres" id="19_lamp_item"]
 [ext_resource type="Resource" path="res://data/items/paper.tres" id="20_paper_item"]
-[ext_resource type="Resource" uid="uid://bhkoaxcb4s2lm" path="res://data/items/rusty_key.tres" id="21_key_item"]
+[ext_resource type="Resource" path="res://data/items/rusty_key.tres" id="21_key_item"]
 [ext_resource type="AudioStream" uid="uid://dkgrulp1rwtj1" path="res://Assets/audio/ambience/room_background.ogg" id="22_amb"]
 [ext_resource type="PackedScene" path="res://scenes/props/key.tscn" id="23_keyprop"]
 
@@ -195,7 +195,7 @@ metadata/_edit_use_anchors_ = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -4)
 locked = true
 lock_id = &"room1_door"
-key_hint = "閿堥挜鍖?
+key_hint = "锈钥匙"
 unlock_dialogue_id = &"door_unlocked"
 
 [node name="DoorToCorridor" type="Area3D" parent="Doors" unique_id=2084437538]
@@ -217,7 +217,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.2)
 transform = Transform3D(0.70130914, 5.9604645e-08, 0.7128576, 1.1641532e-09, 1.0000007, -2.9802322e-08, -0.7128574, 5.9604645e-08, 0.7013092, -1.8752012, 5.9084415, -1.6030788)
 visible = false
 pixel_size = 0.05
-text = "鎴块棿1"
+text = "房间1"
 
 [node name="player" parent="." unique_id=60396258 node_paths=PackedStringArray("camera") instance=ExtResource("6_player")]
 camera = NodePath("../mainCamera3D")
@@ -252,7 +252,7 @@ transform = Transform3D(-0.6950707, 0, -0.7189415, 0, 1, 0, 0.7189415, 0, -0.695
 [node name="TVInteract" type="Area3D" parent="TV2" unique_id=245629768]
 transform = Transform3D(-0.6950706, 0, 0.71894145, 0, 1, 0, -0.71894145, 0, -0.6950706, 0.07728553, 0.45235002, 0.03423834)
 script = ExtResource("13_interact")
-prompt_text = "鎸?E 寮€鍏崇數瑙嗙伅鍏?
+prompt_text = "按 E 开关电视灯光"
 toggle_target = NodePath("../../AreaLight3D")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="TV2/TVInteract" unique_id=1617375674]
