@@ -181,3 +181,17 @@ func _on_ambience_finished(player: AudioStreamPlayer) -> void:
 	if not is_instance_valid(player) or player.stream == null:
 		return
 	player.play()
+## 停止某个音效（正在播放的池子播放器）
+func stop_sfx(sfx_name: StringName) -> void:
+	var stream: AudioStream = _streams.get(sfx_name)
+	if stream == null:
+		return
+	for player in _sfx_players:
+		if player.playing and player.stream == stream:
+			player.stop()
+
+
+## 停止全部普通音效
+func stop_all_sfx() -> void:
+	for player in _sfx_players:
+		player.stop()

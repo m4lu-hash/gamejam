@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://OFFICE/OFFICE/stationary/pen.glb" id="15_keymodel"]
 [ext_resource type="Script" path="res://scripts/rooms/interactable.gd" id="16_interact"]
 [ext_resource type="Resource" path="res://data/items/bronze_key.tres" id="17_keyitem"]
+[ext_resource type="PackedScene" path="res://scenes/props/ghost.tscn" id="18_ghost"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_save"]
 radius = 1.2
@@ -183,3 +184,6 @@ visual_target = NodePath("../BronzeKeyProp")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="BronzeKeyInteract"]
 shape = SubResource("SphereShape3D_key")
+
+[node name="GhostProp" parent="." instance=ExtResource("18_ghost")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 2.6, 0, -2.2)

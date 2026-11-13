@@ -54,3 +54,5 @@ func _play_scare() -> void:
 	await get_tree().create_timer(1.1, true).timeout
 	if ui != null:
 		ui.call("fade_in", 0.9)
+	if audio != null and audio.has_method("stop_sfx"):
+		audio.call("stop_sfx", &"monster_show")
