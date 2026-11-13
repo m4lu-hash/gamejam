@@ -7,12 +7,14 @@ signal caught
 
 const MONSTER_SCENE := "res://scenes/monster/monster.tscn"
 const RESPAWN_DELAY := 2.2
-## 两次闪烁的间隔（秒）
-const SCARE_INTERVAL := 5.0
+## 两次闪烁的间隔（秒）——不要太平凡
+const SCARE_INTERVAL := 9.0
 ## 灯灭/黑屏持续时间（怪物只在这段时间追）
-const BLACKOUT_TIME := 2.6
+const BLACKOUT_TIME := 2.4
 ## 门口灯正常亮度
 const LIGHT_ENERGY := 1.6
+## 暗下去之前的闪烁时长（秒）
+const FLICKER_TIME := 1.1
 
 var monster: Node3D = null
 var _busy := false
@@ -68,16 +70,19 @@ func _blackout_step(scene: Node) -> void:
 	_blackout = true
 	var light := scene.get_node_or_null("ScareLight") as OmniLight3D
 
-	# 灯闪烁
+	# 先快速闪几下，再彻底暗下去
 	if light != null:
 		var tw := create_tween()
-		for i in 4:
-			tw.tween_property(light, "light_energy", 0.0, 0.06)
+		for i in 6:
+			tw.tween_property(light, "light_energy", LIGHT_ENERGY * 0.15, 0.05)
 			tw.tween_property(light, "light_energy", LIGHT_ENERGY, 0.05)
+			tw.tween_interval(0.06)
 		tw.tween_property(light, "light_energy", 0.0, 0.12)
 
-	UIManager.fade_out(0.2)
-	await get_tree().create_timer(0.25, true).timeout
+	await get_tree().create_timer(FLICKER_TIME, true).timeout
+	# 屏幕暗下去要快
+	UIManager.fade_out(0.12)
+	await get_tree().create_timer(0.15, true).timeout
 	_play_sfx(&"monster_show")
 	if monster != null and is_instance_valid(monster) and monster.has_method("set_chasing"):
 		monster.call("set_chasing", true)
@@ -85,7 +90,7 @@ func _blackout_step(scene: Node) -> void:
 	await get_tree().create_timer(BLACKOUT_TIME, true).timeout
 	if monster != null and is_instance_valid(monster) and monster.has_method("set_chasing"):
 		monster.call("set_chasing", false)
-	UIManager.fade_in(0.25)
+	UIManager.fade_in(0.2)
 	if light != null and is_instance_valid(light):
 		light.light_energy = LIGHT_ENERGY
 	_stop_sfx(&"monster_show")
