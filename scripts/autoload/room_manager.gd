@@ -64,9 +64,9 @@ func change_room(packed: PackedScene, spawn_name: String = "") -> void:
 	_apply_spawn(new_player, new_scene, spawn_name)
 	_open_nearest_door(new_player, new_scene, source_angle, has_source_angle)
 
-	# 继承原来的速度：切换后角色继续沿原方向走，手感更连贯
-	if old_player is CharacterBody3D and new_player is CharacterBody3D:
-		(new_player as CharacterBody3D).velocity = (old_player as CharacterBody3D).velocity
+	# 出生后速度清零：不继承旧速度，避免角色继续朝旧门方向漂回触发区（表现为"出门又回到原房间"）
+	if new_player is CharacterBody3D:
+		(new_player as CharacterBody3D).velocity = Vector3.ZERO
 
 	if old_scene != null:
 		old_scene.queue_free()

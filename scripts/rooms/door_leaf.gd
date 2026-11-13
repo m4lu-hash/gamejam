@@ -89,6 +89,9 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	# 兜底：解锁 flag 可能在场景加载之后才恢复（例如读档），这里每帧同步一次
+	if locked and lock_id != &"" and GameState.has_flag(_unlocked_flag_id()):
+		locked = false
 	var player := _find_player()
 	var ignoring := Time.get_ticks_msec() < _ignore_until
 	var dist := 999.0
@@ -217,6 +220,9 @@ func try_unlock(key: ItemData) -> bool:
 	# 记录到全局 flag：房间重载后 _ready 会把 locked 恢复成 false，不再重复开锁
 	if lock_id != &"":
 		GameState.set_flag(_unlocked_flag_id(), true)
+		# 立刻落盘，避免解锁后马上死亡/退出导致状态丢失
+		if has_node("/root/SaveManager"):
+			SaveManager.save_game()
 	# 开锁对话用非阻塞模式，避免暂停导致门不开、玩家动不了
 	if unlock_dialogue_id != &"":
 		UIManager.show_dialogue(unlock_dialogue_id, false)
