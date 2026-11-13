@@ -13,34 +13,44 @@ var is_changing := false
 var last_change_msec := -1000000
 var current_room := ""
 
+## 每次换场的序号：配合 _clear_changing_guard 的延迟兜底，避免旧的一次兜底
+## 把后来新发起的换场状态提前清掉。
+var _change_token := 0
+
 
 ## 切换到 packed 场景，并把玩家放到目标场景里名为 spawn_name 的 Marker3D 上
 func change_room(packed: PackedScene, spawn_name: String = "") -> void:
 	if is_changing or packed == null:
 		return
 
+	# 先实例化并校验，所有可能失败的步骤都放在设置 is_changing 之前
+	var new_scene := packed.instantiate()
+	if new_scene == null:
+		push_error("RoomManager: 目标场景实例化失败：%s" % packed.resource_path)
+		return
+
 	is_changing = true
+	_change_token += 1
+	var token := _change_token
+	# 兜底：即使换场过程中出现运行时错误导致函数提前中断，也会在帧末复位，
+	# 不会让 is_changing 永久卡 true 把后续所有换场都堵死。
+	_clear_changing_guard.call_deferred(token)
 
 	var tree := get_tree()
 	var old_scene := tree.current_scene
 	var old_player := _find_player(old_scene)
 
-	# 记录出发门的开合角度 + 玩家相对这扇门的位置（传送后要一模一样）
+	# 记录出发门的开合角度：到达后复制给目标门，看起来像“门一直开着”
 	var source_angle := 0.0
 	var has_source_angle := false
-	var source_offset := Vector3.ZERO
-	var has_source_offset := false
-	if old_player != null:
+	if old_player != null and old_scene != null:
 		var src_door := _nearest_door_to(old_player, old_scene)
-		if src_door != null:
-			if src_door.has_method("get_angle_deg"):
-				source_angle = absf(src_door.get_angle_deg())
-				has_source_angle = true
-			if src_door.has_method("get_player_local_offset"):
-				source_offset = src_door.get_player_local_offset(old_player)
-				has_source_offset = true
+		if src_door != null and src_door.has_method("get_angle_deg"):
+			source_angle = absf(float(src_door.call("get_angle_deg")))
+			has_source_angle = true
 
-	var new_scene := packed.instantiate()
+	# 从换场开始就进入保护期，避免新场景门触发器在落地同一帧再次触发
+	last_change_msec = Time.get_ticks_msec()
 
 	# 先把新房间挂进来（旧房间还在，屏幕上不会出现空帧）
 	tree.root.add_child(new_scene)
@@ -48,8 +58,11 @@ func change_room(packed: PackedScene, spawn_name: String = "") -> void:
 
 	var new_player := _find_player(new_scene)
 
+	# 出生点以目标场景的 Marker3D 为准（房间重载后依然存在，且一定在房间内侧）。
+	# 不再用旧场景的相对坐标反推位置：那个算法依赖“房间中心”近似，侧门会把
+	# 玩家放到门外/地板外，落地后自动走一段也可能摔出场景。
 	_apply_spawn(new_player, new_scene, spawn_name)
-	_open_nearest_door(new_player, new_scene, source_angle, has_source_angle, source_offset, has_source_offset)
+	_open_nearest_door(new_player, new_scene, source_angle, has_source_angle)
 
 	# 继承原来的速度：切换后角色继续沿原方向走，手感更连贯
 	if old_player is CharacterBody3D and new_player is CharacterBody3D:
@@ -58,26 +71,45 @@ func change_room(packed: PackedScene, spawn_name: String = "") -> void:
 	if old_scene != null:
 		old_scene.queue_free()
 
-	if new_scene is Node:
-		current_room = new_scene.scene_file_path
-	last_change_msec = Time.get_ticks_msec()
+	current_room = new_scene.scene_file_path
 	is_changing = false
 
 
+## 延迟兜底：正常情况下换场已经同步结束（is_changing 已经是 false），这里什么也不做。
+func _clear_changing_guard(token: int) -> void:
+	if is_changing and token == _change_token:
+		push_warning("RoomManager: 换场未正常结束，已复位 is_changing")
+		is_changing = false
+
+
 func _apply_spawn(player: Node3D, scene: Node, spawn_name: String) -> void:
-	if player == null or spawn_name.is_empty():
+	if player == null:
+		push_warning("RoomManager: 目标场景里没有 player 节点")
 		return
 
-	var marker := scene.find_child(spawn_name, true, false)
-	if marker is not Node3D:
-		push_warning("RoomManager: 目标房间缺少出生点：%s" % spawn_name)
+	var marker: Node3D = null
+	if not spawn_name.is_empty():
+		marker = scene.find_child(spawn_name, true, false) as Node3D
+		if marker == null:
+			push_warning("RoomManager: 目标房间缺少出生点：%s，改用场景内的 Spawn 兜底" % spawn_name)
+	# 出生点名字写错时也不要让玩家留在场景默认原点：任选一个 Spawn* 标记兜底
+	if marker == null:
+		marker = _find_fallback_spawn(scene)
+	if marker == null:
+		push_warning("RoomManager: 目标房间没有任何 Spawn 标记，保留场景默认位置")
 		return
 
-	var target := marker as Node3D
-	player.global_position = target.global_position
-	player.rotation.y = target.rotation.y
+	player.global_position = marker.global_position
+	player.rotation.y = marker.rotation.y
 	if player is CharacterBody3D:
 		(player as CharacterBody3D).velocity = Vector3.ZERO
+
+
+func _find_fallback_spawn(scene: Node) -> Node3D:
+	for node in scene.find_children("*", "Marker3D", true, false):
+		if node is Node3D and String(node.name).begins_with("Spawn"):
+			return node as Node3D
+	return null
 
 
 func _find_player(root: Node) -> Node3D:
@@ -94,7 +126,7 @@ func _find_player(root: Node) -> Node3D:
 
 ## 玩家刚落到新房间时，把离他最近的那扇门立刻打开（"像上个场景一样是被推开的"）；
 ## 之后门自己会在玩家走远时自动关上。
-func _open_nearest_door(player: Node3D, scene: Node, source_angle := 0.0, has_source_angle := false, source_offset := Vector3.ZERO, has_source_offset := false) -> void:
+func _open_nearest_door(player: Node3D, scene: Node, source_angle := 0.0, has_source_angle := false) -> void:
 	if player == null:
 		return
 
@@ -116,11 +148,6 @@ func _open_nearest_door(player: Node3D, scene: Node, source_angle := 0.0, has_so
 	# 出生保护期：这段时间内门不响应推门、碰撞关闭，让角色先走开
 	if nearest.has_method("begin_spawn_grace"):
 		nearest.begin_spawn_grace(0.6)
-
-	# 用旧场景里"玩家相对门的位置"来摆放新玩家：距离/方位保持一致
-	if has_source_offset and nearest.has_method("place_player_from_offset"):
-		var pos: Vector3 = nearest.place_player_from_offset(source_offset)
-		player.global_position = pos
 
 	# 传送后朝角色面朝的方向自动走一小段（忽略玩家输入），把角色带离门口
 	if player.has_method("start_auto_walk"):

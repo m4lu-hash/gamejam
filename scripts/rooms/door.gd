@@ -43,6 +43,8 @@ func _process(_delta: float) -> void:
 
 ## 锁着的门：按 E 尝试用背包里的钥匙开锁
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and (event as InputEventKey).echo:
+		return
 	if not event.is_action_pressed("interact"):
 		return
 	if _door == null or not _door.has_method("is_locked") or not bool(_door.call("is_locked")):
@@ -66,6 +68,8 @@ func _player_near_door(radius: float) -> bool:
 
 
 func _try_unlock() -> void:
+	if _door == null or not bool(_door.call("is_locked")):
+		return  # 已经解锁：不再 toast，也不再播开锁对话
 	var found_any_key := false
 	for item in Inventory.items:
 		if not (item is KeyData):
@@ -73,9 +77,13 @@ func _try_unlock() -> void:
 		found_any_key = true
 		if not (item as KeyData).can_unlock(_door.get("lock_id")):
 			continue
+		# try_unlock 内部会写“已解锁”flag 并只在这第一次成功时播对话
 		if bool(_door.call("try_unlock", item)):
 			UIManager.toast("用「%s」打开了锁" % item.display_name)
-			GameState.set_flag(StringName("unlocked_" + String(_door.get("lock_id"))), true)
+			# 兼容不自己写 flag 的门实现；重复写同一个值没有副作用
+			var lock_id := String(_door.get("lock_id"))
+			if not lock_id.is_empty():
+				GameState.set_flag(StringName("unlocked_" + lock_id), true)
 			# 立刻把门打开，不用等靠近自动开
 			if _door.has_method("open_with_animation"):
 				_door.call("open_with_animation", 100.0, false)

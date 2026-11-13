@@ -3,7 +3,9 @@ extends CanvasLayer
 
 var _objective: Label
 var _toast: Label
+var _fade: ColorRect
 var _toast_tween: Tween
+var _fade_tween: Tween
 var _pending_objective := ""
 
 
@@ -12,7 +14,10 @@ func _ready() -> void:
 	layer = 70
 	_objective = get_node_or_null("Objective") as Label
 	_toast = get_node_or_null("Toast") as Label
+	_fade = get_node_or_null("FadeLayer/Fade") as ColorRect
 	assert(_objective != null and _toast != null, "HUD: Objective/Toast node missing")
+	if _fade != null:
+		_fade.modulate.a = 0.0
 	if _toast != null:
 		_toast.modulate.a = 0.0
 	if not _pending_objective.is_empty() and _objective != null:
@@ -38,3 +43,25 @@ func toast(text: String, duration := 2.0) -> void:
 	_toast_tween = create_tween()
 	_toast_tween.tween_interval(maxf(duration, 0.2))
 	_toast_tween.tween_property(_toast, "modulate:a", 0.0, 0.4)
+
+
+## 黑屏淡入（遮住整个画面）
+func fade_out(duration := 0.6) -> void:
+	if _fade == null:
+		return
+	if _fade_tween != null and _fade_tween.is_valid():
+		_fade_tween.kill()
+	_fade_tween = create_tween()
+	_fade_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_fade_tween.tween_property(_fade, "modulate:a", 1.0, duration)
+
+
+## 黑屏淡出
+func fade_in(duration := 0.8) -> void:
+	if _fade == null:
+		return
+	if _fade_tween != null and _fade_tween.is_valid():
+		_fade_tween.kill()
+	_fade_tween = create_tween()
+	_fade_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_fade_tween.tween_property(_fade, "modulate:a", 0.0, duration)

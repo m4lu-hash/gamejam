@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://OFFICE/OFFICE/stationary/pen.glb" id="2_model"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"next_floor_key"
+display_name = "下一层的钥匙"
+description = "一把沉甸甸的旧钥匙，上面刻着楼层的编号。"
+model_scene = ExtResource("2_model")
+inspect_scale = 4.0
+can_use = true

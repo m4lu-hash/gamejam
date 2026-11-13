@@ -8,6 +8,11 @@ extends Node3D
 
 enum State { CLOSED, AUTO_OPENING, FREE, CLOSING }
 
+## 开门音效（每个门自己持有一个 3D 播放器，多扇门同时开也不会互相打断）
+const DOOR_OPEN_SFX = preload("res://Assets/audio/sfx/door_opening.ogg")
+## 两次开门音的冷却（毫秒），防止开门/关门状态抖动时每帧重复播放
+const OPEN_SFX_COOLDOWN_MSEC := 200
+
 ## 最大开合角度（度）
 @export var max_swing_deg := 100.0
 ## 玩家进入多近的范围就自动开门
@@ -51,6 +56,8 @@ var _inward_sign := -1.0  # 朝"房间内"的角度方向
 var _closed_leaf_dir := Vector3.FORWARD
 var _ignore_until := 0    # 出生保护期：这段时间内不自动开门、碰撞关闭
 var _lock_prompt: Label3D  # 锁着时在门上的「按 E 开锁」提示
+var _door_sfx: AudioStreamPlayer3D  # 本门专属的开门音
+var _last_open_sfx_msec := -1000000  # 上次播放开门音的时间戳（毫秒）
 
 @onready var hinge: Node3D = $Hinge
 @onready var _collision: CollisionShape3D = $Hinge/StaticBody3D/CollisionShape3D
@@ -58,12 +65,17 @@ var _lock_prompt: Label3D  # 锁着时在门上的「按 E 开锁」提示
 
 func _ready() -> void:
 	add_to_group("door_leaf")
+	_create_door_sfx()
 	hinge.rotation.y = 0.0
 	_closed_leaf_dir = hinge.global_transform.basis.x
 	_closed_leaf_dir.y = 0.0
 	if _closed_leaf_dir.length() > 0.001:
 		_closed_leaf_dir = _closed_leaf_dir.normalized()
 	_compute_directions()
+	# 房间场景每次进入都会重新实例化：从全局 flag 恢复“已经开过锁”的状态，
+	# 否则回到房间后门又变回锁着，会重复播开锁对话、甚至把玩家关在门外。
+	if lock_id != &"" and GameState.has_flag(_unlocked_flag_id()):
+		locked = false
 	if open_on_start:
 		open_at_angle(max_swing_deg)
 	_lock_prompt = Label3D.new()
@@ -166,6 +178,7 @@ func open_with_animation(angle_deg_arg: float = 100.0, inward := false) -> void:
 	_away_time = 0.0
 	_state = State.AUTO_OPENING
 	is_open = true
+	_play_open_sfx()
 
 
 ## 兜底：直接开
@@ -191,18 +204,31 @@ func is_locked() -> bool:
 	return locked
 
 
-## 尝试用一把钥匙开锁；成功返回 true 并解除锁定
+## 尝试用一把钥匙开锁；成功返回 true 并解除锁定。
+## 已经解锁的门直接返回 false：调用方（door.gd）据此避免重复 toast / 重复播对话。
 func try_unlock(key: ItemData) -> bool:
 	if not locked:
-		return true
+		return false
 	if key == null or not (key is KeyData):
 		return false
 	if not (key as KeyData).can_unlock(lock_id):
 		return false
 	locked = false
+	# 记录到全局 flag：房间重载后 _ready 会把 locked 恢复成 false，不再重复开锁
+	if lock_id != &"":
+		GameState.set_flag(_unlocked_flag_id(), true)
+	# 开门提示立刻消失，不等下一次 _physics_process
+	if _lock_prompt != null:
+		_lock_prompt.visible = false
+		_lock_prompt.text = ""
 	if unlock_dialogue_id != &"":
 		UIManager.show_dialogue(unlock_dialogue_id)
 	return true
+
+
+## 本门对应的“已解锁”全局 flag 名（和 door.gd 里 set_flag 的规则保持一致）
+func _unlocked_flag_id() -> StringName:
+	return StringName("unlocked_" + String(lock_id))
 
 
 ## 玩家相对本门的坐标：x=沿门板方向的横向距离，z=朝房间内的纵向距离（米）
@@ -241,6 +267,30 @@ func _outward_dir() -> Vector3:
 	if outward.length() < 0.01:
 		return Vector3.FORWARD
 	return outward.normalized()
+
+
+## 创建本门专属的 3D 开门音播放器（不依赖门场景资源，实例化时就地挂上）
+func _create_door_sfx() -> void:
+	_door_sfx = AudioStreamPlayer3D.new()
+	_door_sfx.name = "DoorOpeningSound"
+	_door_sfx.stream = DOOR_OPEN_SFX
+	_door_sfx.volume_db = 0.0
+	_door_sfx.unit_size = 8.0
+	_door_sfx.max_distance = 40.0
+	# 声音放在门板中间偏上，而不是合页原点
+	_door_sfx.position = Vector3(0.8, 1.2, 0.0)
+	add_child(_door_sfx)
+
+
+## 门开始打开时播一次（带冷却，不会每帧重复播放）
+func _play_open_sfx() -> void:
+	if _door_sfx == null:
+		return
+	var now := Time.get_ticks_msec()
+	if now - _last_open_sfx_msec < OPEN_SFX_COOLDOWN_MSEC:
+		return
+	_last_open_sfx_msec = now
+	_door_sfx.play()
 
 
 func _snap_closed() -> void:

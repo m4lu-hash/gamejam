@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://c7krn8r3e75uk" path="res://scripts/rooms/interactable.gd" id="6_interact"]
 [ext_resource type="Texture2D" uid="uid://ckb8i2a7qla2d" path="res://Cones & Barriers/Type 3 Barriers/Type_3_barrier_broken_planks_type_barriers.png" id="7_rdat3"]
 [ext_resource type="Texture2D" uid="uid://cal7j0a81vr5e" path="res://Cones & Barriers/Type 3 Barriers/Type_3_barrier_2_planks_type_barriers.png" id="8_eprry"]
+[ext_resource type="AudioStream" uid="uid://hfr5vi3yy5yi" path="res://Assets/audio/ambience/corridor.ogg" id="9_amb"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rfeqg"]
 shading_mode = 0
@@ -310,3 +311,8 @@ mesh = SubResource("ArrayMesh_b63xd")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Type_3_barrier_2_planks2/Type_3_barrier_2_planks/StaticBody3D" unique_id=1472264719]
 shape = SubResource("ConcavePolygonShape3D_3pbo4")
+
+[node name="Ambience" type="AudioStreamPlayer" parent="." unique_id=2117265404]
+stream = ExtResource("9_amb")
+volume_db = -10.0
+autoplay = true

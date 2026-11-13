@@ -25,6 +25,10 @@ extends Area3D
 @export var consume_on_use := false
 @export var swap_target: NodePath
 @export var swap_scene: PackedScene
+## 拾取后要一起隐藏的模型节点（比如桌面上的纸条）
+@export var visual_target: NodePath
+## 拾取/开容器时播放的音效名（AudioManager 里注册的）
+@export var use_sound: StringName = &""
 
 var _prompt: Label3D
 var _player: Node3D
@@ -38,20 +42,32 @@ func _ready() -> void:
 	body_exited.connect(_on_body_exited)
 	if prompt_text.is_empty():
 		prompt_text = _default_prompt()
+	# 一次性互动如果已经做过了（场景重载后靠 flag / 已拾取记录判断），不再显示提示
+	if _is_one_shot() and flag_to_set != &"" and GameState.has_flag(flag_to_set):
+		_used = true
+	if item_to_give != null and GameState.is_picked(item_to_give.id):
+		_used = true
+	if _used:
+		_hide_visual()
+		hide()
+		if swap_scene != null and not swap_target.is_empty() and flag_to_set != &"" and GameState.has_flag(flag_to_set):
+			_swap_model()
 	_prompt = Label3D.new()
 	_prompt.text = prompt_text
 	_prompt.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_prompt.pixel_size = 0.008
 	_prompt.outline_size = 8
 	_prompt.visible = false
-	_prompt.position = Vector3(0.0, 1.6, 0.0)
+	# top_level：不继承 Area3D 的缩放/旋转，互动区缩小后文字不会跟着变小
+	_prompt.top_level = true
 	add_child(_prompt)
 
 
 func _process(_delta: float) -> void:
-	# 有 UI 打开（暂停）时隐藏提示，避免文字叠在检视/背包画面上
+	# 有 UI 打开（暂停）或这次互动已经用完时隐藏提示，避免文字叠在检视/对话画面上
 	if _prompt != null:
-		var want := _inside and not get_tree().paused
+		_prompt.global_position = global_position + Vector3(0.0, 1.6, 0.0)
+		var want := _inside and not get_tree().paused and not _used
 		if _prompt.visible != want:
 			_prompt.visible = want
 
@@ -77,7 +93,7 @@ func _on_body_entered(body: Node3D) -> void:
 		return
 	_player = body
 	_inside = true
-	_prompt.visible = true
+	_prompt.visible = not _used and not get_tree().paused
 
 
 func _on_body_exited(body: Node3D) -> void:
@@ -101,6 +117,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _interact() -> void:
+	if _used:
+		return
 	# 1) 前置条件
 	if requires_item != null and not Inventory.has_item(requires_item.id):
 		UIManager.toast("需要：" + requires_item.display_name)
@@ -118,9 +136,15 @@ func _interact() -> void:
 			_swap_model()
 		if dialogue_id != &"":
 			UIManager.show_dialogue(dialogue_id)
+		# 拾取是一次性的：标记后提示框立刻隐藏，场景重载也靠 flag 不再触发
+		_consume_interaction()
+		_hide_visual()
+		GameState.mark_picked(item_to_give.id)
+		if use_sound != &"":
+			var audio := get_node_or_null("/root/AudioManager")
+			if audio != null and audio.has_method("play_sfx"):
+				audio.call("play_sfx", use_sound)
 		if consume_on_use:
-			_used = true
-			_prompt.visible = false
 			hide()
 		return
 
@@ -129,6 +153,7 @@ func _interact() -> void:
 		UIManager.show_dialogue(dialogue_id)
 		if flag_to_set != &"":
 			GameState.set_flag(flag_to_set)
+		_consume_interaction()
 		return
 
 	# 4) 检视
@@ -136,6 +161,7 @@ func _interact() -> void:
 		UIManager.open_inspect(inspect_item)
 		if flag_to_set != &"":
 			GameState.set_flag(flag_to_set)
+		_consume_interaction()
 		return
 
 	# 5) 开关灯光
@@ -158,6 +184,18 @@ func _interact() -> void:
 			return
 
 
+## 这个互动是否只允许触发一次
+func _is_one_shot() -> bool:
+	return dialogue_id != &"" or inspect_item != null or item_to_give != null
+
+
+## 标记互动已用完，并立刻隐藏「按 E …」提示
+func _consume_interaction() -> void:
+	_used = true
+	if _prompt != null:
+		_prompt.visible = false
+
+
 func _swap_model() -> void:
 	var target := get_node_or_null(swap_target)
 	if target == null:
@@ -166,6 +204,13 @@ func _swap_model() -> void:
 		child.queue_free()
 	var inst := swap_scene.instantiate()
 	target.add_child(inst)
+
+
+## 隐藏拾取后应该消失的模型
+func _hide_visual() -> void:
+	var node := get_node_or_null(visual_target)
+	if node is Node3D:
+		(node as Node3D).visible = false
 
 
 func _is_player(body: Node) -> bool:

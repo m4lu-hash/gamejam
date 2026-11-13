@@ -6,11 +6,13 @@ const HUD_SCENE := "res://scenes/ui/hud.tscn"
 const INVENTORY_SCENE := "res://scenes/ui/inventory.tscn"
 const INSPECT_SCENE := "res://scenes/ui/inspect_view.tscn"
 const DIALOGUE_SCENE := "res://scenes/ui/dialogue_box.tscn"
+const JUMPSCARE_SCENE := "res://scenes/ui/jumpscare.tscn"
 
 var _hud: CanvasLayer
 var _inventory: CanvasLayer
 var _inspect: CanvasLayer
 var _dialogue: CanvasLayer
+var _jumpscare: CanvasLayer
 
 
 func _ready() -> void:
@@ -65,6 +67,26 @@ func dialogue() -> CanvasLayer:
 	return _dialogue
 
 
+func jumpscare() -> CanvasLayer:
+	if _jumpscare == null or not is_instance_valid(_jumpscare):
+		_jumpscare = _ensure(JUMPSCARE_SCENE)
+	return _jumpscare
+
+
+func play_jumpscare() -> void:
+	var j := jumpscare()
+	if j != null and j.has_method("play"):
+		_when_ready(j, func() -> void:
+			j.call("play")
+		)
+
+
+func hide_jumpscare() -> void:
+	var j := jumpscare()
+	if j != null and j.has_method("hide_it"):
+		j.call("hide_it")
+
+
 ## 打开检视（会先停掉正在播的对话，避免两个 UI 抢按键）
 func open_inspect(item: ItemData) -> void:
 	if DialogueManager.is_active():
@@ -117,6 +139,19 @@ func toast(text: String, duration := 2.0) -> void:
 	var h := hud()
 	if h != null and h.has_method("toast"):
 		h.call("toast", text, duration)
+
+
+## HUD：黑屏（用于惊吓/切换）
+func fade_out(duration := 0.6) -> void:
+	var h := hud()
+	if h != null and h.has_method("fade_out"):
+		h.call("fade_out", duration)
+
+
+func fade_in(duration := 0.8) -> void:
+	var h := hud()
+	if h != null and h.has_method("fade_in"):
+		h.call("fade_in", duration)
 
 
 func _ensure(path: String) -> CanvasLayer:

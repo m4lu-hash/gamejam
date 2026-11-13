@@ -22,6 +22,7 @@
 [ext_resource type="Resource" path="res://data/items/desk_lamp.tres" id="19_lamp_item"]
 [ext_resource type="Resource" path="res://data/items/paper.tres" id="20_paper_item"]
 [ext_resource type="Resource" uid="uid://bhkoaxcb4s2lm" path="res://data/items/rusty_key.tres" id="21_key_item"]
+[ext_resource type="AudioStream" uid="uid://dkgrulp1rwtj1" path="res://Assets/audio/ambience/room_background.ogg" id="22_amb"]
 
 [sub_resource type="Environment" id="Environment_vkqoe"]
 ambient_light_source = 2
@@ -57,6 +58,9 @@ size = Vector3(1.4, 2.3, 0.6928894)
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
 radius = 1.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cabinet"]
+size = Vector3(0.55, 1.4, 0.55)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wrux1"]
 resource_name = "Mattress"
@@ -327,6 +331,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.3, 0, -1.5)
 
 [node name="CabinetModel" parent="FileCabinet/FileCabinetModel" unique_id=1300345683 instance=ExtResource("17_cabinet")]
 
+[node name="CabinetCollision" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.3, 0.7, -1.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CabinetCollision"]
+shape = SubResource("BoxShape3D_cabinet")
+
 [node name="DeskLampInteract" type="Area3D" parent="." unique_id=1474208758]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1.1, -1)
 script = ExtResource("13_interact")
@@ -342,6 +352,7 @@ script = ExtResource("13_interact")
 flag_to_set = &"tutorial_paper_taken"
 item_to_give = ExtResource("20_paper_item")
 consume_on_use = true
+visual_target = NodePath("../PaperProp")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PaperInteract" unique_id=118811223]
 shape = SubResource("SphereShape3D_interact")
@@ -356,6 +367,7 @@ requires_item = ExtResource("20_paper_item")
 consume_on_use = true
 swap_target = NodePath("../FileCabinet/FileCabinetModel")
 swap_scene = ExtResource("18_cabinet_open")
+use_sound = &"cabinet_open"
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CabinetInteract" unique_id=431191539]
 shape = SubResource("SphereShape3D_interact")
@@ -366,3 +378,8 @@ light_energy = 5.639
 light_indirect_energy = 0.933
 omni_range = 6.386
 omni_attenuation = 2.429
+
+[node name="Ambience" type="AudioStreamPlayer" parent="." unique_id=2117265401]
+stream = ExtResource("22_amb")
+volume_db = -6.0
+autoplay = true

@@ -2,8 +2,11 @@
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
 
-[node name="MainMenu" type="CanvasLayer"]
+[node name="MainMenu" type="CanvasLayer" node_paths=PackedStringArray("continue_button", "start_button", "quit_button")]
 layer = 100
+continue_button = NodePath("Panel/Buttons/ContinueButton")
+start_button = NodePath("Panel/Buttons/StartButton")
+quit_button = NodePath("Panel/Buttons/QuitButton")
 script = ExtResource("1_menu")
 
 [node name="Dim" type="ColorRect" parent="."]
@@ -49,6 +52,12 @@ layout_mode = 2
 [node name="Buttons" type="VBoxContainer" parent="Panel"]
 layout_mode = 2
 theme_override_constants/separation = 16
+
+[node name="ContinueButton" type="Button" parent="Panel/Buttons"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "继续游戏"
 
 [node name="StartButton" type="Button" parent="Panel/Buttons"]
 custom_minimum_size = Vector2(0, 64)

@@ -2,7 +2,8 @@ extends CanvasLayer
 ## 对话 UI：打字机、按键推进、分支选项。
 ## 由 UIManager 懒加载；DialogueManager 发出 line_started 后自动显示。
 
-const TYPEWRITER_CPS := 40.0  # 打字机速度：字/秒
+## 打字机最快速度：字/秒。实际时长会和语音长度取最大值，让文字和声音同时结束
+const TYPEWRITER_CPS := 60.0
 const CONTINUE_TEXT := "▼ 按 E 继续"
 
 
@@ -47,15 +48,22 @@ func show_dialogue() -> void:
 		_paused_by_me = true
 
 
-## 隐藏对话框并恢复游戏。
+## 隐藏对话框并恢复游戏。关闭时清空文本，避免下一段对话/关闭后残留旧字。
 func hide_dialogue() -> void:
 	_kill_type_tween()
 	_stop_breath()
+	_stop_voice()
 	_typing = false
 	_awaiting_choice = false
 	continue_label.visible = false
 	choices_box.visible = false
 	_clearchoices_box()
+	if speaker_label != null:
+		speaker_label.text = ""
+		speaker_label.visible = false
+	if text_label != null:
+		text_label.text = ""
+		text_label.visible_ratio = 0.0
 	visible = false
 	if _paused_by_me:
 		_paused_by_me = false
@@ -67,6 +75,9 @@ func hide_dialogue() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
 		return
+	# 按住 E 产生的重复事件不要当作连续按键
+	if event is InputEventKey and (event as InputEventKey).echo:
+		return
 	# 触发对话的那一帧不响应，避免同一次 E 键被立刻当成“继续”
 	if _opened_frame == Engine.get_process_frames():
 		return
@@ -76,15 +87,25 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _awaiting_choice:
 		return  # 选项由按钮自己处理（鼠标 / 键盘焦点）
 	if _typing:
-		_finish_typing()  # 打字中：立即显示完整
-	else:
-		DialogueManager.advance()
+		# 第一次按 E：停止当前语音并立刻补全整行，但不推进到下一行；
+		# 再按一次才推进，保证一次按键最多只前进一行。
+		_stop_voice()
+		_finish_typing()
+		return
+	# 文字已经显示完、语音还在播：先停语音，下一次按键再推进
+	if _is_voice_speaking():
+		_stop_voice()
+		_updatecontinue_label()
+		return
+	DialogueManager.advance()
 
 
 func _on_line_started(speaker: String, text: String) -> void:
 	show_dialogue()
 	_kill_type_tween()
 	_stop_breath()
+	# 新的一行开始，先停掉上一行可能还在播的语音
+	_stop_voice()
 	_awaiting_choice = false
 	choices_box.visible = false
 	_clearchoices_box()
@@ -97,10 +118,13 @@ func _on_line_started(speaker: String, text: String) -> void:
 	if count <= 0:
 		_finish_typing()
 		return
+	# 打字机总时长 = max(语音时长, 文本长度/最快速度)，让文字和语音同时结束
+	var voice_seconds := _get_voice_length(text)
+	var duration := maxf(voice_seconds, float(count) / TYPEWRITER_CPS)
 	_type_tween = create_tween()
 	# 游戏暂停时 Tween 仍然运行
 	_type_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	_type_tween.tween_property(text_label, "visible_ratio", 1.0, float(count) / TYPEWRITER_CPS).from(0.0)
+	_type_tween.tween_property(text_label, "visible_ratio", 1.0, duration).from(0.0)
 	_type_tween.finished.connect(_finish_typing)
 
 
@@ -116,6 +140,7 @@ func _onchoices_box_shown(options: Array) -> void:
 	show_dialogue()
 	_typing = false
 	_kill_type_tween()
+	_stop_voice()
 	text_label.visible_ratio = 1.0
 	_awaiting_choice = true
 	continue_label.visible = false
@@ -151,6 +176,42 @@ func _on_choice_pressed(index: int) -> void:
 
 func _on_dialogue_finished(_id: StringName) -> void:
 	hide_dialogue()
+
+
+## 取这一行语音的播放时长（秒）。合成结果会进 VoiceSynth 的缓存，
+## DialogueManager 紧接着调 speak() 时直接命中缓存，不会重复计算。
+func _get_voice_length(text: String) -> float:
+	var voice := get_node_or_null("/root/VoiceSynth")
+	if voice == null or text.is_empty():
+		return 0.0
+	if voice.has_method("is_muted") and bool(voice.call("is_muted")):
+		return 0.0
+	if not voice.has_method("synthesize"):
+		return 0.0
+	var stream := voice.call("synthesize", text) as AudioStream
+	if stream == null:
+		return 0.0
+	var seconds := stream.get_length()
+	if seconds <= 0.0:
+		return 0.0
+	# 语速/音高倍率会改变实际播放时长
+	if voice.has_method("get_pitch_scale"):
+		var pitch := float(voice.call("get_pitch_scale"))
+		if pitch > 0.01:
+			seconds /= pitch
+	return seconds
+
+
+func _is_voice_speaking() -> bool:
+	var voice := get_node_or_null("/root/VoiceSynth")
+	return voice != null and voice.has_method("is_speaking") and bool(voice.call("is_speaking"))
+
+
+func _stop_voice() -> void:
+	if _is_voice_speaking():
+		var voice := get_node_or_null("/root/VoiceSynth")
+		if voice != null and voice.has_method("stop"):
+			voice.call("stop")
 
 
 ## “继续”提示的呼吸闪烁
