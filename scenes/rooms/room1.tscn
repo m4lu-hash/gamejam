@@ -1,4 +1,4 @@
-[gd_scene format=4 uid="uid://bjcvwlirbaycn"]
+﻿[gd_scene format=4 uid="uid://bjcvwlirbaycn"]
 
 [ext_resource type="MeshLibrary" uid="uid://ctt3cn7hkhv50" path="res://Assets/meshlibrary/floor.meshlib" id="1_u52ul"]
 [ext_resource type="Shader" uid="uid://bphu363dyscc1" path="res://shaders/level_blur.gdshader" id="4_0b4ue"]
@@ -23,6 +23,7 @@
 [ext_resource type="Resource" path="res://data/items/paper.tres" id="20_paper_item"]
 [ext_resource type="Resource" uid="uid://bhkoaxcb4s2lm" path="res://data/items/rusty_key.tres" id="21_key_item"]
 [ext_resource type="AudioStream" uid="uid://dkgrulp1rwtj1" path="res://Assets/audio/ambience/room_background.ogg" id="22_amb"]
+[ext_resource type="PackedScene" path="res://scenes/props/key.tscn" id="23_keyprop"]
 
 [sub_resource type="Environment" id="Environment_vkqoe"]
 ambient_light_source = 2
@@ -58,9 +59,6 @@ size = Vector3(1.4, 2.3, 0.6928894)
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
 radius = 1.0
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_cabinet"]
-size = Vector3(0.55, 1.4, 0.55)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wrux1"]
 resource_name = "Mattress"
@@ -109,11 +107,11 @@ size = Vector3(1, 1.6, 1)
 [sub_resource type="BoxShape3D" id="BoxShape3D_desk"]
 size = Vector3(1.4, 0.8, 0.9)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_mattress"]
-size = Vector3(1.8, 0.3, 1.1)
-
 [sub_resource type="BoxShape3D" id="BoxShape3D_fridge"]
 size = Vector3(0.84, 1.9, 0.98)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cabinet"]
+size = Vector3(0.55, 1.4, 0.55)
 
 [node name="Room1" type="Node3D" unique_id=13638478]
 
@@ -156,7 +154,7 @@ mesh = SubResource("PlaneMesh_vkqoe")
 shape = SubResource("ConcavePolygonShape3D_0b4ue")
 
 [node name="Backdrop" type="MeshInstance3D" parent="Geometry" unique_id=2046391877]
-transform = Transform3D(-4.2433844, 26.78573, -26.578835, 20.92186, 11.035103, 0.28732264, -4.4323792, 26.44462, 26.801771, -8.211327, 0, -7.8715534)
+transform = Transform3D(-4.2433844, 26.78573, -26.578835, 20.92186, 11.035103, 0.28732264, -4.4323792, 26.44462, 26.801771, -8.188675, 0, -7.8992777)
 material_override = SubResource("StandardMaterial3D_gjxql")
 mesh = SubResource("PlaneMesh_co6qv")
 
@@ -197,7 +195,7 @@ metadata/_edit_use_anchors_ = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -4)
 locked = true
 lock_id = &"room1_door"
-key_hint = "锈钥匙"
+key_hint = "閿堥挜鍖?
 unlock_dialogue_id = &"door_unlocked"
 
 [node name="DoorToCorridor" type="Area3D" parent="Doors" unique_id=2084437538]
@@ -219,7 +217,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.2)
 transform = Transform3D(0.70130914, 5.9604645e-08, 0.7128576, 1.1641532e-09, 1.0000007, -2.9802322e-08, -0.7128574, 5.9604645e-08, 0.7013092, -1.8752012, 5.9084415, -1.6030788)
 visible = false
 pixel_size = 0.05
-text = "房间1"
+text = "鎴块棿1"
 
 [node name="player" parent="." unique_id=60396258 node_paths=PackedStringArray("camera") instance=ExtResource("6_player")]
 camera = NodePath("../mainCamera3D")
@@ -254,7 +252,7 @@ transform = Transform3D(-0.6950707, 0, -0.7189415, 0, 1, 0, 0.7189415, 0, -0.695
 [node name="TVInteract" type="Area3D" parent="TV2" unique_id=245629768]
 transform = Transform3D(-0.6950706, 0, 0.71894145, 0, 1, 0, -0.71894145, 0, -0.6950706, 0.07728553, 0.45235002, 0.03423834)
 script = ExtResource("13_interact")
-prompt_text = "按 E 开关电视灯光"
+prompt_text = "鎸?E 寮€鍏崇數瑙嗙伅鍏?
 toggle_target = NodePath("../../AreaLight3D")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="TV2/TVInteract" unique_id=1617375674]
@@ -273,10 +271,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3653133, 0.054859042, 0.70
 transform = Transform3D(-0.61818, 0, 2.2948968, 0, 1, 0, -1.7854807, 0, -0.7945531, 1.7126665, 0.04938948, -1.79362)
 
 [node name="Mattress" type="MeshInstance3D" parent="mattress" unique_id=1678585986]
-visible = false
+transform = Transform3D(0.9979953, 0.06329398, -0.0005402565, -0.06329387, 0.9978492, -0.017049573, -0.0005401373, 0.0170496, 0.9998547, -1.446154, -0.03848976, -1.163377)
 mesh = SubResource("ArrayMesh_u11sa")
-
-[node name="StaticBody3D" type="StaticBody3D" parent="mattress/Mattress" unique_id=101383737]
 
 [node name="AreaLight3D" type="AreaLight3D" parent="." unique_id=112005015]
 transform = Transform3D(0.69545966, 0, 0.7185651, 0, 1, 0, -0.7185651, 0, 0.69545966, 2.7541254, 1.0130554, 2.8307676)
@@ -296,20 +292,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8404615, 0.45, -1.2190607)
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DeskCollision" unique_id=1591842749]
 shape = SubResource("BoxShape3D_desk")
 
-[node name="MattressCollision" type="StaticBody3D" parent="." unique_id=316451816]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7126665, 0.18, -1.79362)
-visible = false
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MattressCollision" unique_id=785114143]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15676785, 0)
-shape = SubResource("BoxShape3D_mattress")
-
-[node name="DeskSit" type="Marker3D" parent="." unique_id=1106047797]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.35, -1.22)
-
-[node name="MattressSit" type="Marker3D" parent="." unique_id=98086179]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.71, 0.35, -1.79)
-
 [node name="FridgeCollision" type="StaticBody3D" parent="." unique_id=1759641177]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3653133, 1.0048591, 0.70072865)
 
@@ -325,16 +307,16 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.9, -1)
 transform = Transform3D(1.2235, 0, 0.5705, 0, 1.35, 0, -0.5705, 0, 1.2235, -2.75948, 1.083, -0.14526862)
 
 [node name="FileCabinet" type="Node3D" parent="." unique_id=144573929]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.3, 0, -1.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4094942, 0, -1.5)
 
 [node name="FileCabinetModel" type="Node3D" parent="FileCabinet" unique_id=1517119058]
 
 [node name="CabinetModel" parent="FileCabinet/FileCabinetModel" unique_id=1300345683 instance=ExtResource("17_cabinet")]
 
-[node name="CabinetCollision" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.3, 0.7, -1.5)
+[node name="CabinetCollision" type="StaticBody3D" parent="." unique_id=1628174265]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4357145, 0.7, -1.5)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="CabinetCollision"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CabinetCollision" unique_id=1823871567]
 shape = SubResource("BoxShape3D_cabinet")
 
 [node name="DeskLampInteract" type="Area3D" parent="." unique_id=1474208758]
@@ -368,6 +350,7 @@ consume_on_use = true
 swap_target = NodePath("../FileCabinet/FileCabinetModel")
 swap_scene = ExtResource("18_cabinet_open")
 use_sound = &"cabinet_open"
+reveal_target = NodePath("../RustyKeyProp")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CabinetInteract" unique_id=431191539]
 shape = SubResource("SphereShape3D_interact")
@@ -383,3 +366,8 @@ omni_attenuation = 2.429
 stream = ExtResource("22_amb")
 volume_db = -6.0
 autoplay = true
+
+[node name="RustyKeyProp" parent="." instance=ExtResource("23_keyprop")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 3.3, 0.95, -0.9)
+visible = false
+

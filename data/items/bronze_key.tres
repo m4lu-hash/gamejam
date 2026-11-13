@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="KeyData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/key_data.gd" id="1_script"]
-[ext_resource type="PackedScene" path="res://OFFICE/OFFICE/stationary/pen.glb" id="2_model"]
+[ext_resource type="PackedScene" path="res://scenes/props/key.tscn" id="2_model"]
 
 [resource]
 script = ExtResource("1_script")
@@ -9,6 +9,6 @@ id = &"bronze_key"
 display_name = "黄铜钥匙"
 description = "从中间房间找到的钥匙，能打开最左边那间房的门。"
 model_scene = ExtResource("2_model")
-inspect_scale = 4.0
+inspect_scale = 6.0
 can_use = true
 unlock_ids = Array[StringName]([&"room3_door"])

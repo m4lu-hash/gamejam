@@ -29,6 +29,8 @@ extends Area3D
 @export var visual_target: NodePath
 ## 拾取/开容器时播放的音效名（AudioManager 里注册的）
 @export var use_sound: StringName = &""
+## 拾取/开容器后要显示出来的节点（例如柜子里的钥匙模型）
+@export var reveal_target: NodePath
 
 var _prompt: Label3D
 var _player: Node3D
@@ -49,6 +51,8 @@ func _ready() -> void:
 		_used = true
 	if _used:
 		_hide_visual()
+		if flag_to_set != &"" and GameState.has_flag(flag_to_set):
+			_reveal()
 		hide()
 		if swap_scene != null and not swap_target.is_empty() and flag_to_set != &"" and GameState.has_flag(flag_to_set):
 			_swap_model()
@@ -139,6 +143,7 @@ func _interact() -> void:
 		# 拾取是一次性的：标记后提示框立刻隐藏，场景重载也靠 flag 不再触发
 		_consume_interaction()
 		_hide_visual()
+		_reveal()
 		GameState.mark_picked(item_to_give.id)
 		if use_sound != &"":
 			var audio := get_node_or_null("/root/AudioManager")
@@ -211,6 +216,13 @@ func _hide_visual() -> void:
 	var node := get_node_or_null(visual_target)
 	if node is Node3D:
 		(node as Node3D).visible = false
+
+
+## 显示"容器里的东西"
+func _reveal() -> void:
+	var node := get_node_or_null(reveal_target)
+	if node is Node3D:
+		(node as Node3D).visible = true
 
 
 func _is_player(body: Node) -> bool:

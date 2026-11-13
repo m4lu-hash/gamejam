@@ -8,10 +8,11 @@
 [ext_resource type="AudioStream" uid="uid://dkgrulp1rwtj1" path="res://Assets/audio/ambience/room_background.ogg" id="12_amb"]
 [ext_resource type="PackedScene" path="res://OFFICE/OFFICE/extras/desk_phone.glb" id="13_phone"]
 [ext_resource type="Script" path="res://scripts/rooms/save_point.gd" id="14_savepoint"]
-[ext_resource type="PackedScene" path="res://OFFICE/OFFICE/stationary/pen.glb" id="15_keymodel"]
+[ext_resource type="PackedScene" path="res://scenes/props/key.tscn" id="15_keymodel"]
 [ext_resource type="Script" path="res://scripts/rooms/interactable.gd" id="16_interact"]
 [ext_resource type="Resource" path="res://data/items/bronze_key.tres" id="17_keyitem"]
 [ext_resource type="PackedScene" path="res://scenes/props/ghost.tscn" id="18_ghost"]
+[ext_resource type="PackedScene" path="res://OFFICE/OFFICE/desks/desk1.glb" id="19_table"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_save"]
 radius = 1.2
@@ -172,7 +173,10 @@ script = ExtResource("14_savepoint")
 shape = SubResource("SphereShape3D_save")
 
 [node name="BronzeKeyProp" parent="." instance=ExtResource("15_keymodel")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 0.05, -1.0)
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -1.6, 0.9, -1.0)
+
+[node name="Table" parent="." instance=ExtResource("19_table")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 0, -1.0)
 
 [node name="BronzeKeyInteract" type="Area3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 0.6, -1.0)
