@@ -160,6 +160,14 @@ func _physics_process(delta: float) -> void:
 
 ## 传送进房间时调用：瞬间设为指定角度（不播动画）
 func open_at_angle(angle_deg_arg: float) -> void:
+	# 锁着的门不能被"到达自动开门"强行打开
+	if locked:
+		_angle = 0.0
+		_ang_vel = 0.0
+		_state = State.CLOSED
+		hinge.rotation.y = 0.0
+		is_open = false
+		return
 	var mag := clampf(absf(angle_deg_arg), 0.0, max_swing_deg)
 	_angle = _inward_sign * deg_to_rad(mag)
 	_ang_vel = 0.0

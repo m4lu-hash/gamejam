@@ -263,12 +263,18 @@ transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -3.2, 0, -12)
 
 [node name="DoorLeafRoom1" parent="." unique_id=287126781 instance=ExtResource("4_doorleaf")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, 3.2)
+locked = true
+lock_id = &"room1_door"
+key_hint = "锈钥匙"
 
 [node name="DoorLeafRoom2" parent="." unique_id=1440554801 instance=ExtResource("4_doorleaf")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, -4.8)
 
 [node name="DoorLeafRoom3" parent="." unique_id=1327246817 instance=ExtResource("4_doorleaf")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0, -12.8)
+locked = true
+lock_id = &"room3_door"
+key_hint = "黄铜钥匙"
 
 [node name="airwall-c-l" type="StaticBody3D" parent="." unique_id=1594155701]
 
