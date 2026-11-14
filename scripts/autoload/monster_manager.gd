@@ -23,6 +23,7 @@ var _busy := false
 var _scare_timer := 0.0
 var _blackout := false
 var _in_room3 := false
+var _blackout_token := 0
 
 
 func _ready() -> void:
@@ -36,6 +37,9 @@ func _process(delta: float) -> void:
 	if scene == null:
 		return
 	if not scene.scene_file_path.ends_with("room3.tscn"):
+		# 黑屏途中走出房间：立刻收尾，别让走廊继续黑着
+		if _blackout:
+			_abort_blackout()
 		_scare_timer = 0.0
 		_in_room3 = false
 		return
@@ -48,6 +52,9 @@ func _process(delta: float) -> void:
 		return
 	if _blackout:
 		return
+	# 灯亮着的时候怪物必须停住
+	if monster != null and is_instance_valid(monster) and monster.has_method("set_chasing"):
+		monster.call("set_chasing", false)
 
 	_scare_timer += delta
 	if _scare_timer >= SCARE_INTERVAL:
@@ -76,6 +83,8 @@ func _blackout_step(scene: Node) -> void:
 	if _blackout or not is_instance_valid(scene):
 		return
 	_blackout = true
+	_blackout_token += 1
+	var token := _blackout_token
 	var light := scene.get_node_or_null("ScareLight") as OmniLight3D
 
 	# 先快速闪几下，再彻底暗下去
@@ -88,14 +97,20 @@ func _blackout_step(scene: Node) -> void:
 		tw.tween_property(light, "light_energy", 0.0, 0.12)
 
 	await get_tree().create_timer(FLICKER_TIME, true).timeout
+	if token != _blackout_token:
+		return
 	# 屏幕暗下去要快
 	UIManager.fade_out(0.12)
 	await get_tree().create_timer(0.15, true).timeout
+	if token != _blackout_token:
+		return
 	_play_sfx(&"monster_show")
 	if monster != null and is_instance_valid(monster) and monster.has_method("set_chasing"):
 		monster.call("set_chasing", true)
 
 	await get_tree().create_timer(BLACKOUT_TIME, true).timeout
+	if token != _blackout_token:
+		return
 	if monster != null and is_instance_valid(monster) and monster.has_method("set_chasing"):
 		monster.call("set_chasing", false)
 	UIManager.fade_in(0.2)
@@ -110,6 +125,16 @@ func _blackout_step(scene: Node) -> void:
 	var shuffler := scene.get_node_or_null("DoorShuffler")
 	if shuffler != null and shuffler.has_method("shuffle"):
 		shuffler.call("shuffle")
+
+
+## 黑屏被打断（离开房间）：立刻恢复画面、停下怪物
+func _abort_blackout() -> void:
+	_blackout_token += 1
+	_blackout = false
+	if monster != null and is_instance_valid(monster) and monster.has_method("set_chasing"):
+		monster.call("set_chasing", false)
+	_stop_sfx(&"monster_show")
+	UIManager.fade_in(0.15)
 
 
 func _on_caught() -> void:
@@ -150,6 +175,10 @@ func _stop_sfx(sfx: StringName) -> void:
 
 ## 重置（新游戏时调用）
 func reset() -> void:
+	_blackout_token += 1
+	if _blackout:
+		UIManager.fade_in(0.15)
+	_blackout = false
 	if monster != null and is_instance_valid(monster):
 		monster.queue_free()
 	monster = null

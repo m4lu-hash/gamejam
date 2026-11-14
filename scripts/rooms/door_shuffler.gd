@@ -1,6 +1,6 @@
 extends Node
-## room3 随机门：两扇门（都通往走廊）只显示一扇，黑屏后随机切换。
-## 隐藏的那扇门用 Blocker 挡住门洞，避免玩家从"没有门的洞"走出去。
+## room3 随机门：两扇门（都通往走廊）轮流出现，每次黑屏后换另一扇。
+## 隐藏的那扇门用 Blocker 挡住门洞，墙洞也一并补上。
 
 @export var door_a: Node3D
 @export var trigger_a: Node
@@ -12,6 +12,7 @@ extends Node
 @export var hole_b: Node3D
 
 var _pairs: Array = []
+var _index := 0
 
 
 func _ready() -> void:
@@ -39,16 +40,22 @@ func _ready() -> void:
 		[door_a, trigger_a, blocker_a, hole_a],
 		[door_b, trigger_b, blocker_b, hole_b],
 	]
-	shuffle()
+	# 初始随机选一扇，之后轮流切换
+	_index = randi() % maxi(_pairs.size(), 1)
+	_apply()
 
 
-## 随机只激活其中一扇
+## 切到下一扇（轮流出现）
 func shuffle() -> void:
 	if _pairs.is_empty():
 		return
-	var pick := randi() % _pairs.size()
+	_index = (_index + 1) % _pairs.size()
+	_apply()
+
+
+func _apply() -> void:
 	for i in _pairs.size():
-		_set_pair(_pairs[i][0], _pairs[i][1], _pairs[i][2], _pairs[i][3], i == pick)
+		_set_pair(_pairs[i][0], _pairs[i][1], _pairs[i][2], _pairs[i][3], i == _index)
 
 
 func _set_pair(door: Node3D, trigger: Node, blocker: Node3D, hole: Node3D, active: bool) -> void:
