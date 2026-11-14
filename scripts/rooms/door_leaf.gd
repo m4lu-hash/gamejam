@@ -37,6 +37,8 @@ const OPEN_SFX_COOLDOWN_MSEC := 200
 ## 锁的编号：钥匙的 unlock_ids 里包含它才能开
 @export var lock_id: StringName = &""
 ## 没钥匙时的提示里显示的钥匙名（仅用于文案）
+## 开锁对话是否暂停游戏（true=播完才恢复，room1 用）
+@export var unlock_pauses := false
 @export var key_hint := "钥匙"
 ## 开锁时播的对话（可空）
 @export var unlock_dialogue_id: StringName = &""
@@ -241,9 +243,9 @@ func try_unlock(key: ItemData) -> bool:
 		# 立刻落盘，避免解锁后马上死亡/退出导致状态丢失
 		if has_node("/root/SaveManager"):
 			SaveManager.save_game()
-	# 开锁对话用非阻塞模式，避免暂停导致门不开、玩家动不了
+	# 开锁对话：room1 需要暂停播完，其它门不暂停以免卡住
 	if unlock_dialogue_id != &"":
-		UIManager.show_dialogue(unlock_dialogue_id, false)
+		UIManager.show_dialogue(unlock_dialogue_id, unlock_pauses)
 	# 开门提示立刻消失，不等下一次 _physics_process
 	if _lock_prompt != null:
 		_lock_prompt.visible = false
