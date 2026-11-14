@@ -15,11 +15,14 @@ const BLACKOUT_TIME := 2.4
 const LIGHT_ENERGY := 1.6
 ## 暗下去之前的闪烁时长（秒）
 const FLICKER_TIME := 1.1
+## 刚进 room3 后多久开始第一次闪灯
+const ENTRY_FIRST_DELAY := 1.5
 
 var monster: Node3D = null
 var _busy := false
 var _scare_timer := 0.0
 var _blackout := false
+var _in_room3 := false
 
 
 func _ready() -> void:
@@ -34,7 +37,12 @@ func _process(delta: float) -> void:
 		return
 	if not scene.scene_file_path.ends_with("room3.tscn"):
 		_scare_timer = 0.0
+		_in_room3 = false
 		return
+	if not _in_room3:
+		# 刚进屋子就开始闪灯：把计时器拨到快触发的位置
+		_in_room3 = true
+		_scare_timer = SCARE_INTERVAL - ENTRY_FIRST_DELAY
 	if monster == null or not is_instance_valid(monster):
 		_spawn_monster(scene)
 		return
