@@ -39,6 +39,8 @@ const OPEN_SFX_COOLDOWN_MSEC := 200
 ## 没钥匙时的提示里显示的钥匙名（仅用于文案）
 ## 开锁对话是否暂停游戏（true=播完才恢复，room1 用）
 @export var unlock_pauses := false
+## 覆盖"向房间外"的方向（世界坐标）；不填则按房间中心估算
+@export var outward_override := Vector3.ZERO
 @export var key_hint := "钥匙"
 ## 开锁时播的对话（可空）
 @export var unlock_dialogue_id: StringName = &""
@@ -152,12 +154,14 @@ func _physics_process(delta: float) -> void:
 			_lock_prompt.text = ""
 
 	# 门在自动转动、或出生保护期内，且玩家在门口附近时：临时关掉碰撞，避免把人挤出去
+	# 门开大之后不再挡路（避免门扇转进门口把人堵住）；关到 45° 内恢复碰撞
+	var wide_open := absf(_angle) > deg_to_rad(45.0)
 	if player != null:
 		var near := dist < 2.2
 		var auto_moving := _state == State.AUTO_OPENING or _state == State.CLOSING
-		_collision.disabled = ignoring or (auto_moving and near)
+		_collision.disabled = ignoring or wide_open or (auto_moving and near)
 	else:
-		_collision.disabled = ignoring
+		_collision.disabled = ignoring or wide_open
 
 
 ## 传送进房间时调用：瞬间设为指定角度（不播动画）
@@ -285,6 +289,8 @@ func _compute_directions() -> void:
 
 
 func _outward_dir() -> Vector3:
+	if outward_override.length() > 0.01:
+		return outward_override.normalized()
 	var room := get_tree().current_scene
 	var room_center := Vector3.ZERO
 	if room is Node3D:

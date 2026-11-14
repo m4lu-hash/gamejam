@@ -4,6 +4,9 @@ extends Node
 ## 被抓：跳脸 → 黑屏 → 回上一个存档点。
 
 signal caught
+## 黑屏开始/结束（怪物只在这两个信号之间移动）
+signal darkness_started
+signal darkness_ended
 
 const MONSTER_SCENE := "res://scenes/monster/monster.tscn"
 const RESPAWN_DELAY := 2.2
@@ -105,14 +108,14 @@ func _blackout_step(scene: Node) -> void:
 	if token != _blackout_token:
 		return
 	_play_sfx(&"monster_show")
-	if monster != null and is_instance_valid(monster) and monster.has_method("set_chasing"):
-		monster.call("set_chasing", true)
+	# 用信号驱动：黑屏开始 → 怪物开始追
+	darkness_started.emit()
 
 	await get_tree().create_timer(BLACKOUT_TIME, true).timeout
 	if token != _blackout_token:
 		return
-	if monster != null and is_instance_valid(monster) and monster.has_method("set_chasing"):
-		monster.call("set_chasing", false)
+	# 黑屏结束 → 怪物立刻停
+	darkness_ended.emit()
 	UIManager.fade_in(0.2)
 	_stop_sfx(&"monster_show")
 	_blackout = false
@@ -131,6 +134,7 @@ func _blackout_step(scene: Node) -> void:
 func _abort_blackout() -> void:
 	_blackout_token += 1
 	_blackout = false
+	darkness_ended.emit()
 	if monster != null and is_instance_valid(monster) and monster.has_method("set_chasing"):
 		monster.call("set_chasing", false)
 	_stop_sfx(&"monster_show")
@@ -142,6 +146,7 @@ func _on_caught() -> void:
 		return
 	_busy = true
 	caught.emit()
+	darkness_ended.emit()
 	get_tree().paused = true
 	UIManager.play_jumpscare()
 	await get_tree().create_timer(RESPAWN_DELAY, true).timeout

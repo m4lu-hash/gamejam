@@ -24,6 +24,7 @@
 [ext_resource type="Resource" path="res://data/items/rusty_key.tres" id="21_key_item"]
 [ext_resource type="AudioStream" uid="uid://dkgrulp1rwtj1" path="res://Assets/audio/ambience/room_background.ogg" id="22_amb"]
 [ext_resource type="PackedScene" path="res://scenes/props/key.tscn" id="23_keyprop"]
+[ext_resource type="Script" path="res://scripts/rooms/floor_fix.gd" id="24_floorfix"]
 
 [sub_resource type="Environment" id="Environment_vkqoe"]
 ambient_light_source = 2
@@ -140,6 +141,7 @@ material = SubResource("FogMaterial_vkqoe")
 [node name="FloorGrid" type="GridMap" parent="Geometry" unique_id=1854370980]
 mesh_library = ExtResource("1_u52ul")
 cell_size = Vector3(4, 0.1, 4)
+script = ExtResource("24_floorfix")
 data = {
 "cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 0, 65534, 0, 65535, 65534, 0)
 }
@@ -198,6 +200,7 @@ lock_id = &"room1_door"
 key_hint = "锈钥匙"
 unlock_dialogue_id = &"door_unlocked"
 unlock_pauses = true
+outward_override = Vector3(0, 0, -1)
 
 [node name="DoorToCorridor" type="Area3D" parent="Doors" unique_id=2084437538]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -4.5)

@@ -123,6 +123,7 @@ metadata/_edit_use_anchors_ = true
 
 [node name="DoorLeafBack" parent="Doors" unique_id=1603708198 instance=ExtResource("11_doorleaf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -4)
+outward_override = Vector3(0, 0, -1)
 
 [node name="DoorToCorridor" type="Area3D" parent="Doors" unique_id=1498784515]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -4.5)

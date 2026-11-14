@@ -1,15 +1,15 @@
 extends Node
 ## room3 随机门：两扇门（都通往走廊）轮流出现，每次黑屏后换另一扇。
-## 隐藏的那扇门用 Blocker 挡住门洞，墙洞也一并补上。
+## 门洞一直保留；隐藏的那扇门用墙板(Plug)挡住、Blocker 封路。
 
 @export var door_a: Node3D
 @export var trigger_a: Node
 @export var blocker_a: Node3D
-@export var hole_a: Node3D
+@export var plug_a: Node3D
 @export var door_b: Node3D
 @export var trigger_b: Node
 @export var blocker_b: Node3D
-@export var hole_b: Node3D
+@export var plug_b: Node3D
 
 var _pairs: Array = []
 var _index := 0
@@ -17,30 +17,28 @@ var _index := 0
 
 func _ready() -> void:
 	randomize()
-	# 场景里 node_paths 偶尔没绑定成功，按名字兜底解析
 	var root := get_parent()
 	if root != null:
 		if door_a == null:
 			door_a = root.get_node_or_null("Doors/DoorLeafLeft") as Node3D
 		if trigger_a == null:
 			trigger_a = root.get_node_or_null("Doors/DoorToCorridor")
+		if blocker_a == null:
+			blocker_a = root.get_node_or_null("BlockerA") as Node3D
+		if plug_a == null:
+			plug_a = root.get_node_or_null("PlugA") as Node3D
 		if door_b == null:
 			door_b = root.get_node_or_null("Doors/DoorLeafAlt") as Node3D
 		if trigger_b == null:
 			trigger_b = root.get_node_or_null("Doors/DoorToCorridorAlt")
-		if blocker_a == null:
-			blocker_a = root.get_node_or_null("BlockerA") as Node3D
 		if blocker_b == null:
 			blocker_b = root.get_node_or_null("BlockerB") as Node3D
-		if hole_a == null:
-			hole_a = root.get_node_or_null("Geometry/DoorWall_X/DoorHole") as Node3D
-		if hole_b == null:
-			hole_b = root.get_node_or_null("Geometry/DoorWall_Z/DoorHoleZ") as Node3D
+		if plug_b == null:
+			plug_b = root.get_node_or_null("PlugB") as Node3D
 	_pairs = [
-		[door_a, trigger_a, blocker_a, hole_a],
-		[door_b, trigger_b, blocker_b, hole_b],
+		[door_a, trigger_a, blocker_a, plug_a],
+		[door_b, trigger_b, blocker_b, plug_b],
 	]
-	# 初始随机选一扇，之后轮流切换
 	_index = randi() % maxi(_pairs.size(), 1)
 	_apply()
 
@@ -58,7 +56,7 @@ func _apply() -> void:
 		_set_pair(_pairs[i][0], _pairs[i][1], _pairs[i][2], _pairs[i][3], i == _index)
 
 
-func _set_pair(door: Node3D, trigger: Node, blocker: Node3D, hole: Node3D, active: bool) -> void:
+func _set_pair(door: Node3D, trigger: Node, blocker: Node3D, plug: Node3D, active: bool) -> void:
 	if door != null and is_instance_valid(door):
 		if door.has_method("set_active"):
 			door.call("set_active", active)
@@ -74,6 +72,6 @@ func _set_pair(door: Node3D, trigger: Node, blocker: Node3D, hole: Node3D, activ
 		var shape := blocker.get_node_or_null("CollisionShape3D") as CollisionShape3D
 		if shape != null:
 			shape.disabled = active
-	# 隐藏门时把墙洞也补上，看起来就是一整面墙
-	if hole != null and is_instance_valid(hole):
-		hole.visible = active
+	# 隐藏门时用墙板把门洞遮住
+	if plug != null and is_instance_valid(plug):
+		plug.visible = not active

@@ -18,6 +18,22 @@ var _done := false
 
 func _ready() -> void:
 	_find_player()
+	# 追逐完全由 MonsterManager 的黑屏信号驱动
+	var manager := get_node_or_null("/root/MonsterManager")
+	if manager != null:
+		if manager.has_signal("darkness_started"):
+			manager.connect("darkness_started", _on_darkness_started)
+		if manager.has_signal("darkness_ended"):
+			manager.connect("darkness_ended", _on_darkness_ended)
+
+
+func _on_darkness_started() -> void:
+	chasing = true
+
+
+func _on_darkness_ended() -> void:
+	chasing = false
+	velocity = Vector3.ZERO
 
 
 func _find_player() -> void:

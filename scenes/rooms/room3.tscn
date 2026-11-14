@@ -7,36 +7,13 @@
 [ext_resource type="PackedScene" uid="uid://mtsy13i6rbtf" path="res://scenes/doors/door_leaf.tscn" id="11_doorleaf"]
 [ext_resource type="AudioStream" uid="uid://dkgrulp1rwtj1" path="res://Assets/audio/ambience/room_background.ogg" id="12_amb"]
 [ext_resource type="PackedScene" path="res://scenes/props/key.tscn" id="13_keymodel"]
-[ext_resource type="Script" path="res://scripts/rooms/interactable.gd" id="14_interact"]
+[ext_resource type="Script" uid="uid://c7krn8r3e75uk" path="res://scripts/rooms/interactable.gd" id="14_interact"]
 [ext_resource type="Resource" path="res://data/items/next_floor_key.tres" id="15_keyitem"]
-[ext_resource type="Script" path="res://scripts/rooms/scare_trigger.gd" id="16_scare"]
-[ext_resource type="Script" path="res://scripts/rooms/door_shuffler.gd" id="18_shuffler"]
+[ext_resource type="Script" uid="uid://bepciawacdip2" path="res://scripts/rooms/scare_trigger.gd" id="16_scare"]
 [ext_resource type="Script" uid="uid://dcutkcp54bu0j" path="res://addons/flickering_light/flickering_omni_light_3d.gd" id="17_flicker"]
-[ext_resource type="PackedScene" path="res://OFFICE/OFFICE/desks/desk1.glb" id="19_table"]
-
-[sub_resource type="SphereMesh" id="SphereMesh_bulb"]
-radius = 0.09
-height = 0.18
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bulb"]
-emission_enabled = true
-emission = Color(1, 0.87, 0.62, 1)
-emission_energy_multiplier = 2.0
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_scare"]
-size = Vector3(1.6, 2.3, 2.2)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_table"]
-size = Vector3(1.4, 0.8, 0.9)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_block_x"]
-size = Vector3(0.2, 2.3, 1.8)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_block_z"]
-size = Vector3(1.8, 2.3, 0.2)
-
-[sub_resource type="SphereShape3D" id="SphereShape3D_key"]
-radius = 0.9
+[ext_resource type="Script" uid="uid://dgxfbs4ycq7gr" path="res://scripts/rooms/door_shuffler.gd" id="18_shuffler"]
+[ext_resource type="PackedScene" uid="uid://bdyi3fredjpkq" path="res://OFFICE/OFFICE/desks/desk1.glb" id="19_table"]
+[ext_resource type="Script" path="res://scripts/rooms/floor_fix.gd" id="20_floorfix"]
 
 [sub_resource type="Environment" id="Environment_xjrub"]
 ambient_light_source = 2
@@ -70,6 +47,40 @@ shader_parameter/blur_amount = 0.0
 [sub_resource type="BoxShape3D" id="BoxShape3D_door_x"]
 size = Vector3(0.6, 2.3, 1.4)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_block_x"]
+size = Vector3(0.2, 2.3, 1.8)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_block_z"]
+size = Vector3(1.8, 2.3, 0.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_plug_x"]
+size = Vector3(0.2, 2.3, 1.62)
+
+[sub_resource type="BoxMesh" id="BoxMesh_plug_z"]
+size = Vector3(1.62, 2.3, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_plug"]
+albedo_color = Color(0.56, 0.54, 0.6, 1)
+roughness = 1.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_table"]
+size = Vector3(1.4, 0.8, 0.9)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_key"]
+radius = 0.9
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bulb"]
+emission_enabled = true
+emission = Color(1, 0.87, 0.62, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_bulb"]
+radius = 0.09
+height = 0.18
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_scare"]
+size = Vector3(1.6, 2.3, 2.2)
+
 [node name="Room3" type="Node3D" unique_id=602838772]
 
 [node name="Environment" type="Node3D" parent="." unique_id=1787801256]
@@ -94,6 +105,7 @@ material = SubResource("FogMaterial_cc7fx")
 [node name="FloorGrid" type="GridMap" parent="Geometry" unique_id=389532748]
 mesh_library = ExtResource("1_htvxh")
 cell_size = Vector3(4, 0.1, 4)
+script = ExtResource("20_floorfix")
 data = {
 "cells": PackedInt32Array(65535, 65535, 0, 65535, 0, 0, 0, 65535, 1, 0, 0, 0, 65534, 65535, 0, 65534, 0, 0)
 }
@@ -101,10 +113,12 @@ data = {
 [node name="FloorPlane" type="MeshInstance3D" parent="Geometry" unique_id=1669693501]
 transform = Transform3D(1.9106855e-15, -4.371139e-08, -1, -1, -4.371139e-08, 0, -4.371139e-08, 1, -4.371139e-08, 0, 4, -4)
 mesh = SubResource("PlaneMesh_16a5g")
+visible = false
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Geometry/FloorPlane" unique_id=1937932884]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Geometry/FloorPlane/StaticBody3D" unique_id=1456092246]
+disabled = true
 shape = SubResource("ConcavePolygonShape3D_gg1fp")
 
 [node name="Backdrop" type="MeshInstance3D" parent="Geometry" unique_id=1069594568]
@@ -122,13 +136,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.81, 0)
 operation = 2
 size = Vector3(1.6, 2.3, 0.562)
 
-[node name="DoorWall_Z" type="CSGBox3D" parent="Geometry"]
+[node name="DoorWall_Z" type="CSGBox3D" parent="Geometry" unique_id=1859762361]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -4)
 use_collision = true
 size = Vector3(8, 8, 0.1)
 
-[node name="DoorHoleZ" type="CSGBox3D" parent="Geometry/DoorWall_Z"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0, -2.81, 0)
+[node name="DoorHoleZ" type="CSGBox3D" parent="Geometry/DoorWall_Z" unique_id=16267945]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, -2.81, -0.071549416)
 operation = 2
 size = Vector3(1.6, 2.3, 0.562)
 
@@ -161,6 +175,7 @@ locked = true
 lock_id = &"room3_door"
 key_hint = "黄铜钥匙"
 unlock_dialogue_id = &"door_unlocked"
+outward_override = Vector3(-1, 0, 0)
 
 [node name="DoorToCorridor" type="Area3D" parent="Doors" unique_id=1946249224]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 1.2, 0)
@@ -173,42 +188,44 @@ exit_direction = Vector3(-1, 0, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.33106136, 0, 0)
 shape = SubResource("BoxShape3D_door_x")
 
-[node name="DoorLeafAlt" parent="Doors" instance=ExtResource("11_doorleaf")]
+[node name="DoorLeafAlt" parent="Doors" unique_id=648307646 instance=ExtResource("11_doorleaf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0, -4)
+outward_override = Vector3(0, 0, -1)
 
-[node name="DoorToCorridorAlt" type="Area3D" parent="Doors"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0, 1.2, -4.5)
+[node name="DoorToCorridorAlt" type="Area3D" parent="Doors" unique_id=1074652024]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.2, -4.5)
 script = ExtResource("5_door")
 target_scene = "res://corridor-1.tscn"
 target_spawn = "SpawnFromRoom3"
-exit_direction = Vector3(0, 0, -1)
 
-[node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToCorridorAlt"]
+[node name="Trigger" type="CollisionShape3D" parent="Doors/DoorToCorridorAlt" unique_id=383807524]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.33106136, 0, 0)
 shape = SubResource("BoxShape3D_door_x")
 
-[node name="DoorShuffler" type="Node" parent="." node_paths=PackedStringArray("door_a", "trigger_a", "door_b", "trigger_b", "blocker_a", "blocker_b", "hole_a", "hole_b")]
+[node name="DoorShuffler" type="Node" parent="." unique_id=1276561368]
 script = ExtResource("18_shuffler")
-door_a = NodePath("Doors/DoorLeafLeft")
-trigger_a = NodePath("Doors/DoorToCorridor")
-door_b = NodePath("Doors/DoorLeafAlt")
-trigger_b = NodePath("Doors/DoorToCorridorAlt")
-blocker_a = NodePath("BlockerA")
-blocker_b = NodePath("BlockerB")
-hole_a = NodePath("Geometry/DoorWall_X/DoorHole")
-hole_b = NodePath("Geometry/DoorWall_Z/DoorHoleZ")
 
-[node name="BlockerA" type="StaticBody3D" parent="."]
+[node name="BlockerA" type="StaticBody3D" parent="." unique_id=73842166]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.15, 0)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="BlockerA"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BlockerA" unique_id=1296479986]
 shape = SubResource("BoxShape3D_block_x")
 
-[node name="BlockerB" type="StaticBody3D" parent="."]
+[node name="BlockerB" type="StaticBody3D" parent="." unique_id=1566414298]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.15, -4)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="BlockerB"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BlockerB" unique_id=1724211720]
 shape = SubResource("BoxShape3D_block_z")
+
+[node name="PlugA" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.19, 0)
+mesh = SubResource("BoxMesh_plug_x")
+material_override = SubResource("StandardMaterial3D_plug")
+
+[node name="PlugB" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1.19, -4)
+mesh = SubResource("BoxMesh_plug_z")
+material_override = SubResource("StandardMaterial3D_plug")
 
 [node name="Spawns" type="Node3D" parent="." unique_id=189377493]
 
@@ -235,56 +252,55 @@ stream = ExtResource("12_amb")
 volume_db = -6.0
 autoplay = true
 
-[node name="NextFloorKeyProp" parent="." instance=ExtResource("13_keymodel")]
+[node name="NextFloorKeyProp" parent="." unique_id=525773643 instance=ExtResource("13_keymodel")]
 transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -2.6, 0.9, -2.8)
 
-[node name="Table" parent="." instance=ExtResource("19_table")]
+[node name="Table" parent="." unique_id=1600865237 instance=ExtResource("19_table")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.6, 0, -2.8)
 
-[node name="TableCollision" type="StaticBody3D" parent="."]
+[node name="TableCollision" type="StaticBody3D" parent="." unique_id=1973880333]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.6, 0.45, -2.8)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="TableCollision"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TableCollision" unique_id=1769131181]
 shape = SubResource("BoxShape3D_table")
 
-[node name="NextFloorKeyInteract" type="Area3D" parent="."]
+[node name="NextFloorKeyInteract" type="Area3D" parent="." unique_id=1120706768]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.6, 1.2, -2.8)
 script = ExtResource("14_interact")
-item_to_give = ExtResource("15_keyitem")
 flag_to_set = &"key_taken"
+item_to_give = ExtResource("15_keyitem")
 consume_on_use = true
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="NextFloorKeyInteract"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NextFloorKeyInteract" unique_id=578784998]
 shape = SubResource("SphereShape3D_key")
 
-[node name="MonsterSpawn" type="Marker3D" parent="."]
+[node name="MonsterSpawn" type="Marker3D" parent="." unique_id=189598742]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 0, 2.5)
 
-[node name="ScareLight" type="OmniLight3D" parent="."]
+[node name="ScareLight" type="OmniLight3D" parent="." unique_id=999568562]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 2.2, 0)
 light_color = Color(0.9, 0.82, 0.7, 1)
 light_energy = 1.6
-omni_range = 5.0
 
-[node name="Bulb" type="MeshInstance3D" parent="."]
+[node name="Bulb" type="MeshInstance3D" parent="." unique_id=592009572]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.55, 0)
-mesh = SubResource("SphereMesh_bulb")
 material_override = SubResource("StandardMaterial3D_bulb")
+mesh = SubResource("SphereMesh_bulb")
 
-[node name="BulbLight" type="OmniLight3D" parent="."]
+[node name="BulbLight" type="OmniLight3D" parent="." unique_id=1451565927]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.55, 0)
 light_color = Color(1, 0.88, 0.65, 1)
 light_energy = 1.3
 omni_range = 7.0
 script = ExtResource("17_flicker")
-max_energy = 1.6
-speed = 3.0
 pattern = "mmmmmmmmmmmmammmmmmmmmmmmmmam"
+speed = 3.0
+max_energy = 1.6
 
-[node name="ScareZone" type="Area3D" parent="." node_paths=PackedStringArray("scare_light")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.0, 1.0, 0)
+[node name="ScareZone" type="Area3D" parent="." unique_id=1312667506 node_paths=PackedStringArray("scare_light")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1, 0)
 script = ExtResource("16_scare")
 scare_light = NodePath("../ScareLight")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="ScareZone"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ScareZone" unique_id=2056765015]
 shape = SubResource("BoxShape3D_scare")
